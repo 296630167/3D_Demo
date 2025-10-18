@@ -97,3 +97,41 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# ===== AI工具相关文件 =====
+# Trae AI工具生成的文件夹
+.trae/
+
+# ===== 编辑器和IDE相关文件 =====
+# VS Code配置文件夹
+.vscode/
+# VS Code工作区文件
+*.code-workspace
+
+# ===== 系统相关文件 =====
+# Windows缩略图缓存
+Thumbs.db
+# macOS系统文件
+.DS_Store
+# Vim临时文件
+*.swp
+*.swo
+
+# ===== 备份和临时文件 =====
+# 备份文件
+*.backup
+*.bak
+*~
+
+# ===== Unity特定的临时文件 =====
+# 崩溃转储文件
+*.stackdump
+*.dmp
+
+# ===== 第三方插件相关（可选） =====
+# DOTween相关设置文件
+/[Aa]ssets/Plugins/Demigiant/DOTween/DOTween*.asset
+# Odin Inspector临时文件
+/[Aa]ssets/Plugins/Sirenix/Odin Inspector/Config/
+# Easy Save 3临时文件
+/[Aa]ssets/Plugins/Easy Save 3/ES3File_*
