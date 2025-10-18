@@ -135,3 +135,9 @@ Thumbs.db
 /[Aa]ssets/Plugins/Sirenix/Odin Inspector/Config/
 # Easy Save 3临时文件
 /[Aa]ssets/Plugins/Easy Save 3/ES3File_*
+
+# ===== Git LFS相关文件 =====
+# LFS对象缓存
+.lfs/
+# LFS临时文件
+*.lfs.*
