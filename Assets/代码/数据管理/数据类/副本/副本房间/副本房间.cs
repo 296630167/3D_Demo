@@ -1,4 +1,4 @@
-public class 副本房间_基类
+public class 副本房间
 {
     public int 行;
     public int 列;
@@ -10,7 +10,8 @@ public class 副本房间_基类
     public bool 左;
     public bool 右;
     // 副本地图相关数据
-    public 副本房间_基类(int 行, int 列)
+    public 副本房间地图 房间地图;
+    public 副本房间(int 行, int 列)
     {
         this.行 = 行;
         this.列 = 列;
@@ -21,5 +22,6 @@ public class 副本房间_基类
         this.下 = false;
         this.左 = false;
         this.右 = false;
+        房间地图 = new 副本房间地图();
     }
 }

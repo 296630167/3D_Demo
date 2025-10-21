@@ -8,15 +8,15 @@ using UnityEngine.UI;
 
 public class aaa : 面板基类
 {
-    public 副本房间_基类 入口;
-    public 副本房间_基类 出口;
-    public 副本房间_基类[,] 副本房间数组;
+    public 副本房间 入口;
+    public 副本房间 出口;
+    public 副本房间[,] 副本房间数组;
     Image[,] 小地图格子数组;
-    public List<副本房间_基类> 主路径房间列表;
+    public List<副本房间> 主路径房间列表;
     路线绘制器 路线绘制器;
     protected override void 开始时()
     {
-        副本房间数组 = new 副本房间_基类[5, 5];
+        副本房间数组 = new 副本房间[5, 5];
         小地图格子数组 = new Image[5, 5];
         路线绘制器 = 组件<路线绘制器>("路线绘制");
         for (int x = 0; x < 5; x++)
@@ -31,7 +31,7 @@ public class aaa : 面板基类
         {
             for (int 列 = 0; 列 < 5; 列++)
             {
-                副本房间数组[行, 列] = new 副本房间_基类(行, 列);
+                副本房间数组[行, 列] = new 副本房间(行, 列);
             }
         }
         StartCoroutine(流程());
@@ -49,11 +49,11 @@ public class aaa : 面板基类
         yield return new WaitForSeconds(0.5f);
         颜色(出口.行, 出口.列, Color.red);
         yield return new WaitForSeconds(0.5f);
-        主路径房间列表 = new List<副本房间_基类>();
+        主路径房间列表 = new List<副本房间>();
         yield return StartCoroutine(生成最短路径(入口, 出口));
         yield return StartCoroutine(生成延长路径(15));
     }
-    IEnumerator 生成最短路径(副本房间_基类 起点, 副本房间_基类 终点)
+    IEnumerator 生成最短路径(副本房间 起点, 副本房间 终点)
     {
         主路径房间列表.Clear();
         
@@ -64,7 +64,7 @@ public class aaa : 面板基类
         
         Debug.Log($"生成最短路径：从({当前行}, {当前列})到({目标行}, {目标列})");
         
-        副本房间_基类 当前房间 = 副本房间数组[当前行, 当前列];
+        副本房间 当前房间 = 副本房间数组[当前行, 当前列];
         当前房间.路径类型 = 副本房间路径类型.主路;
         主路径房间列表.Add(当前房间);
         
@@ -108,7 +108,7 @@ public class aaa : 面板基类
             yield return StartCoroutine(显示扩展动画(随机格子));
         }
         yield return new WaitForSeconds(0.5f);
-        副本房间_基类 房间 = null;
+        副本房间 房间 = null;
         print(入口.行 + " " + 入口.列);
         print(主路径房间列表[0].行 + " " + 主路径房间列表[0].列);
         print(主路径房间列表[1].行 + " " + 主路径房间列表[1].列);
@@ -127,12 +127,12 @@ public class aaa : 面板基类
 
     private struct 可扩展格子
     {
-        public List<副本房间_基类> 主路径格子;
-        public List<副本房间_基类> 扩展格子;
-        public List<副本房间_基类> 移除格子;
+        public List<副本房间> 主路径格子;
+        public List<副本房间> 扩展格子;
+        public List<副本房间> 移除格子;
         public int 插入索引;
         
-        public 可扩展格子(List<副本房间_基类> 主路径格子, List<副本房间_基类> 扩展格子, List<副本房间_基类> 移除格子, int 插入索引)
+        public 可扩展格子(List<副本房间> 主路径格子, List<副本房间> 扩展格子, List<副本房间> 移除格子, int 插入索引)
         {
             this.主路径格子 = 主路径格子;
             this.扩展格子 = 扩展格子;
@@ -189,7 +189,7 @@ public class aaa : 面板基类
         }
     }
 
-    private void 设置格子颜色组(List<副本房间_基类> 格子列表, Color 颜色)
+    private void 设置格子颜色组(List<副本房间> 格子列表, Color 颜色)
     {
         foreach (var 格子 in 格子列表)
         {
@@ -204,7 +204,7 @@ public class aaa : 面板基类
 
         for (int i = 0; i < 最大索引; i++)
         {
-            var 主路径格子 = new List<副本房间_基类>();
+            var 主路径格子 = new List<副本房间>();
             for (int j = 0; j < 连接数; j++)
             {
                 主路径格子.Add(主路径房间列表[i + j]);
@@ -222,15 +222,15 @@ public class aaa : 面板基类
         return 可扩展格子列表;
     }
 
-    private void 添加方向扩展(List<可扩展格子> 列表, List<副本房间_基类> 主路径格子, int 插入索引, bool 是同行)
+    private void 添加方向扩展(List<可扩展格子> 列表, List<副本房间> 主路径格子, int 插入索引, bool 是同行)
     {
         var 方向方法组 = 是同行 ? 
-            new System.Func<副本房间_基类, 副本房间_基类>[] { 周边房间_上, 周边房间_下 } :
-            new System.Func<副本房间_基类, 副本房间_基类>[] { 周边房间_左, 周边房间_右 };
+            new System.Func<副本房间, 副本房间>[] { 周边房间_上, 周边房间_下 } :
+            new System.Func<副本房间, 副本房间>[] { 周边房间_左, 周边房间_右 };
             
         foreach (var 方向方法 in 方向方法组)
         {
-            var 扩展格子 = new List<副本房间_基类>();
+            var 扩展格子 = new List<副本房间>();
             bool 有效扩展 = true;
             
             foreach (var 主格子 in 主路径格子)
@@ -246,18 +246,18 @@ public class aaa : 面板基类
             
             if (有效扩展)
             {
-                var 移除格子 = 主路径格子.Count > 2 ? 主路径格子.GetRange(1, 主路径格子.Count - 2) : new List<副本房间_基类>();
+                var 移除格子 = 主路径格子.Count > 2 ? 主路径格子.GetRange(1, 主路径格子.Count - 2) : new List<副本房间>();
                 列表.Add(new 可扩展格子(主路径格子, 扩展格子, 移除格子, 插入索引 + 1));
             }
         }
     }
 
-    private bool 检查同行(List<副本房间_基类> 格子列表)
+    private bool 检查同行(List<副本房间> 格子列表)
     {
         return 格子列表.All(格子 => 格子.行 == 格子列表[0].行);
     }
 
-    private bool 检查同列(List<副本房间_基类> 格子列表)
+    private bool 检查同列(List<副本房间> 格子列表)
     {
         return 格子列表.All(格子 => 格子.列 == 格子列表[0].列);
     }
@@ -294,12 +294,12 @@ public class aaa : 面板基类
     {
         小地图格子数组[x, y].color = c;
     }
-    public 副本房间_基类 周边房间_上(副本房间_基类 目标房间 = null) => 获取指定方向房间(目标房间, 1, 0);
-    public 副本房间_基类 周边房间_下(副本房间_基类 目标房间 = null) => 获取指定方向房间(目标房间, -1, 0);
-    public 副本房间_基类 周边房间_左(副本房间_基类 目标房间 = null) => 获取指定方向房间(目标房间, 0, -1);
-    public 副本房间_基类 周边房间_右(副本房间_基类 目标房间 = null) => 获取指定方向房间(目标房间, 0, 1);
-    public 副本房间_基类 当前所在房间;
-    private 副本房间_基类 获取指定方向房间(副本房间_基类 目标房间, int 行偏移, int 列偏移)
+    public 副本房间 周边房间_上(副本房间 目标房间 = null) => 获取指定方向房间(目标房间, 1, 0);
+    public 副本房间 周边房间_下(副本房间 目标房间 = null) => 获取指定方向房间(目标房间, -1, 0);
+    public 副本房间 周边房间_左(副本房间 目标房间 = null) => 获取指定方向房间(目标房间, 0, -1);
+    public 副本房间 周边房间_右(副本房间 目标房间 = null) => 获取指定方向房间(目标房间, 0, 1);
+    public 副本房间 当前所在房间;
+    private 副本房间 获取指定方向房间(副本房间 目标房间, int 行偏移, int 列偏移)
     {
         // 如果目标房间为null，使用当前所在房间
         var 基准房间 = 目标房间 ?? 当前所在房间;
