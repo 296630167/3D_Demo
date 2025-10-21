@@ -6,6 +6,7 @@
 Assets/Resources/数据/角色数据.asset -filter -diff -merge text
 Assets/Resources/数据/道具数据.asset -filter -diff -merge text
 Assets/Resources/数据/技能数据.asset -filter -diff -merge text
+Assets/Resources/数据/技能树数据.asset -filter -diff -merge text
 # 其他大型Asset文件使用LFS
 *.asset filter=lfs diff=lfs merge=lfs -text
 # ===== 3D模型文件 =====
