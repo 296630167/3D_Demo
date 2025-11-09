@@ -24,7 +24,15 @@ public class 技能类
     public 技能伤害计算方式 伤害计算方式;
     public int 冷却时间;
     public float 作用范围;
-    public Sprite 图标;
+    public string 图标路径;
+    public Sprite 图标
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(图标路径)) return null;
+            return 取.图片(图标路径);
+        }
+    }
     public 技能类()
     {
         施加效果 = 技能施加效果.无;

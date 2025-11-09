@@ -29,6 +29,7 @@ public class 技能树类
     public List<技能树格子> 技能树格子列表 = new List<技能树格子>();
     public List<技能树连接> 技能树连接列表 = new List<技能树连接>();
     public int 技能总数 => 技能树格子列表.Count;
+    public string 背景路径;
     public 技能树类()
     {
         技能树格子列表 = new List<技能树格子>(18);

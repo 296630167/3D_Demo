@@ -84,8 +84,18 @@ public static class 组件扩展
         return 变换;
     }
     
-    public static Vector3 隐藏位置 = new Vector3(10000, 10000, 0);
-    public static Vector3 显示位置 = Vector3.zero;
+    // public static Vector3 隐藏位置 = new Vector3(10000, 10000, 0);
+    // public static Vector3 显示位置 = Vector3.zero;
+    
+    // public static void 显示(this Transform 对象)
+    // {
+    //     对象?.gameObject.显示();
+    // }
+    
+    // public static void 隐藏(this Transform 对象)
+    // {
+    //     对象?.gameObject.隐藏();
+    // }
     
     public static void 显示(this Transform 对象)
     {
@@ -96,15 +106,9 @@ public static class 组件扩展
     {
         对象?.gameObject.隐藏();
     }
-    
-    public static void 打开(this Transform 对象)
+    public static void 切换显示(this Transform 对象,bool 显示 = true)
     {
-        对象?.gameObject.打开();
-    }
-    
-    public static void 关闭(this Transform 对象)
-    {
-        对象?.gameObject.关闭();
+        对象?.gameObject.切换显示(显示);
     }
     public static void 清理(this Transform 父对象)
     {

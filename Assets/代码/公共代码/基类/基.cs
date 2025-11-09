@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using TMPro;
+using System.Net.Security;
 
 public abstract class 基: MonoBehaviour
 {
@@ -17,7 +18,6 @@ public abstract class 基: MonoBehaviour
     protected static 玩家存档 cd => sj.当前存档;
     protected readonly Dictionary<string, GameObject> 子对象缓存 = new Dictionary<string, GameObject>();
     protected readonly Dictionary<(string, Type), Component> 组件缓存 = new Dictionary<(string, Type), Component>();
-    protected readonly List<string> 已监听事件列表 = new List<string>();
     #region 生命周期函数
     /// <summary>
     /// 对象实例化后立即执行，在所有Start()之前
@@ -39,7 +39,6 @@ public abstract class 基: MonoBehaviour
     /// 用途：需要其他对象已初始化的逻辑、游戏开始设置、查找场景对象
     /// </summary>
     protected virtual void Start() => 开始时();
-    
     /// <summary>
     /// 固定时间间隔执行（默认0.02秒/50Hz），不受帧率影响
     /// 执行次数：持续执行，独立于渲染帧率
@@ -119,7 +118,11 @@ public abstract class 基: MonoBehaviour
     }
     protected virtual void 开始时()
     {
-
+        StartCoroutine(开始时携程());
+    }
+    protected virtual IEnumerator 开始时携程()
+    {
+        yield return null;
     }
     protected virtual void 固定更新() { }
     protected virtual void 每帧更新() { }
@@ -141,101 +144,26 @@ public abstract class 基: MonoBehaviour
     
     protected virtual void 注销事件监听()
     {
-        
+
     }
-    
-    private void 注销所有事件监听()
-    {
-        foreach (string 事件名 in 已监听事件列表)
-        {
-            this.停止监听事件(事件名);
-        }
-        已监听事件列表.Clear();
-    }
-    
-    protected void 监听事件(string 事件名, Action 回调)
-    {
-        事.注册事件(事件名, 回调);  // ✅ 调用事
-        if (!已监听事件列表.Contains(事件名))
-        {
-            已监听事件列表.Add(事件名);
-        }
-    }
-    
-    protected void 监听事件<T>(string 事件名, Action<T> 回调)
-    {
-        事.注册事件(事件名, 回调);  // ✅ 调用事
-        if (!已监听事件列表.Contains(事件名))
-        {
-            已监听事件列表.Add(事件名);
-        }
-    }
-    
-    protected void 监听事件<T1, T2>(string 事件名, Action<T1, T2> 回调)
-    {
-        // 需要转换为单参数或多参数形式
-        事.注册事件(事件名, (object[] 参数) => {
-            if (参数.Length >= 2)
-            {
-                回调((T1)参数[0], (T2)参数[1]);
-            }
-        });
-        if (!已监听事件列表.Contains(事件名))
-        {
-            已监听事件列表.Add(事件名);
-        }
-    }
-    
-    protected void 监听事件<T1, T2, T3>(string 事件名, Action<T1, T2, T3> 回调)
-    {
-        // 需要转换为多参数形式
-        事.注册事件(事件名, (object[] 参数) => {
-            if (参数.Length >= 3)
-            {
-                回调((T1)参数[0], (T2)参数[1], (T3)参数[2]);
-            }
-        });
-        if (!已监听事件列表.Contains(事件名))
-        {
-            已监听事件列表.Add(事件名);
-        }
-    }
-    
-    protected void 停止监听事件(string 事件名)
-    {
-        事.注销所有事件(事件名);  // ✅ 调用事
-        已监听事件列表.Remove(事件名);
-    }
-    
-    protected void 触发事件(string 事件名)
-    {
-        事.触发事件(事件名);  // ✅ 调用事
-    }
-    
-    protected void 触发事件<T>(string 事件名, T 参数)
-    {
-        事.触发事件(事件名, 参数);  // ✅ 调用事
-    }
-    
-    protected void 触发事件<T1, T2>(string 事件名, T1 参数1, T2 参数2)
-    {
-        事.触发事件(事件名, 参数1, 参数2);  // ✅ 调用事
-    }
-    
-    protected void 触发事件<T1, T2, T3>(string 事件名, T1 参数1, T2 参数2, T3 参数3)
-    {
-        事.触发事件(事件名, 参数1, 参数2, 参数3);  // ✅ 调用事
-    }
-    
-    protected void 延迟触发事件(string 事件名, float 延迟秒数)
-    {
-        事.延迟触发事件(事件名, 延迟秒数);  // ✅ 调用事
-    }
-    
-    protected void 延迟触发事件<T>(string 事件名, T 参数, float 延迟秒数)
-    {
-        this.延迟触发事件(事件名, 参数, 延迟秒数);
-    }
+    // 无参
+    protected void 监听事件(string 分组名, string 事件名, Action 回调) => 事.注册事件(分组名, 事件名, 回调);
+    protected void 监听事件(string 事件名, Action 回调) => 事.注册事件(事件名, 回调);
+    protected void 监听唯一事件(string 事件名, Action 回调) => 事.注册唯一事件(事件名, 回调);
+    protected void 触发事件(string 事件名) => 事.触发事件(事件名);
+    protected void 触发唯一事件(string 事件名) => 事.触发唯一事件(事件名);
+    protected void 移除事件(string 分组名) => 事.移除事件(分组名);
+    protected void 移除事件(string 事件名,Action 回调) => 事.移除事件(事件名,回调);
+    protected void 移除唯一事件(string 事件名) => 事.移除唯一事件(事件名);
+
+    // 有参
+    protected void 监听事件<T>(string 分组名, string 事件名, Action<T> 回调) => 事.注册事件(分组名, 事件名, 回调);
+    protected void 监听事件<T>(string 事件名, Action<T> 回调) => 事.注册事件(事件名, 回调);
+    protected void 监听唯一事件<T>(string 事件名, Action<T> 回调) => 事.注册唯一事件<T>(事件名, 回调);
+    protected void 触发事件<T>(string 事件名, T 参数) => 事.触发事件(事件名, 参数);
+    protected void 触发唯一事件<T>(string 事件名, T 参数) => 事.触发唯一事件(事件名, 参数);
+    protected void 移除事件<T>(string 分组名, string 事件名, Action<T> 回调) => 事.移除事件(分组名, 事件名, 回调);
+    protected void 移除事件<T>(string 事件名, Action<T> 回调) => 事.移除事件(事件名, 回调);
     #endregion
     #region 组件获取方法
     private void 缓存所有子对象()
@@ -336,12 +264,17 @@ public abstract class 基: MonoBehaviour
     protected LineRenderer 线条渲染器(string 对象名称) => 组件<LineRenderer>(对象名称);
     protected TrailRenderer 拖尾渲染器(string 对象名称) => 组件<TrailRenderer>(对象名称);
     protected ParticleSystem 粒子系统(string 对象名称) => 组件<ParticleSystem>(对象名称);
-    protected Light 光源(string 对象名称) => 组件<Light>(对象名称);
-    protected Camera 相机(string 对象名称) => 组件<Camera>(对象名称);
     #endregion
-    public virtual void 显示() => t.position = Vector2.zero;
-    public virtual void 隐藏() => t.position = new Vector2(3000, 3000);
-    public virtual void 打开() => g.SetActive(true);
-    public virtual void 关闭() => g.SetActive(false);
+    // public virtual void 显示() => t.position = Vector2.zero;
+    // public virtual void 隐藏() => t.position = new Vector2(3000, 3000);
+    public virtual void 显示() => g.SetActive(true);
+    public virtual void 隐藏() => g.SetActive(false);
+    public virtual void 切换显示(bool 显示) => g.SetActive(显示);
     public virtual void 销毁() => Destroy(g);
+    // 二次封装下 启动 和 关闭携程的方法 
+    public virtual Coroutine 启动携程(IEnumerator 携程) => StartCoroutine(携程);
+    public virtual void 关闭携程(Coroutine 携程) => StopCoroutine(携程);
+    public virtual Coroutine 启动携程(string 携程名称) => StartCoroutine(携程名称);
+    public virtual void 关闭携程(string 携程名称) => StopCoroutine(携程名称);
+
 }

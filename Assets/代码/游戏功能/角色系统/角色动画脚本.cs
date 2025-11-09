@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using UnityEngine;
 
 public class 角色动画脚本 : 基
@@ -22,7 +23,7 @@ public class 角色动画脚本 : 基
         }
         else
         {
-            Debug.Log($"角色动画脚本初始化完成: {gameObject.name}");
+            //Debug.Log($"角色动画脚本初始化完成: {gameObject.name}");
         }
         foreach (var 动画 in 动画控制器.runtimeAnimatorController.animationClips)
         {
@@ -30,7 +31,7 @@ public class 角色动画脚本 : 基
         }
     }
     
-    public void 播放指定动画(string 动画名称)
+    public void 播放动画(string 动画名称)
     {
         if (动画控制器 != null)
         {
@@ -76,6 +77,15 @@ public class 角色动画脚本 : 基
         if (动画控制器 != null)
         {
             return 动画控制器.GetCurrentAnimatorStateInfo(0).normalizedTime;
+        }
+        return 0f;
+    }
+
+    public float 获取动画时长(string v)
+    {
+        if (动画字典.TryGetValue(v, out float 时长))
+        {
+            return 时长;
         }
         return 0f;
     }

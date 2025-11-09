@@ -19,6 +19,7 @@ public class 道具类
     public int 价格;
     public int 行;
     public int 列;
+    public string 图标路径;
 
     public 道具类()
     {

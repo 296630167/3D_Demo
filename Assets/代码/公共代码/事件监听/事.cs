@@ -1,301 +1,236 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using UnityEngine;
 
 public static class 事
 {
-    #region 事件数据结构
-    private static readonly Dictionary<string, List<Action>> 无参事件字典 = new Dictionary<string, List<Action>>();
-    private static readonly Dictionary<string, List<Action<object>>> 有参事件字典 = new Dictionary<string, List<Action<object>>>();
-    private static readonly Dictionary<string, List<Action<object[]>>> 多参事件字典 = new Dictionary<string, List<Action<object[]>>>();
-    #endregion
+    private const string 默认分组 = "默认";
+    private static readonly ConcurrentDictionary<string, Action> 唯一事件字典 = new ConcurrentDictionary<string, Action>();
+    private static readonly ConcurrentDictionary<string, Delegate> 唯一事件泛型字典 = new ConcurrentDictionary<string, Delegate>();
+    private static readonly ConcurrentDictionary<string, Action<object[]>> 唯一事件多参字典 = new ConcurrentDictionary<string, Action<object[]>>();
+    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentBag<Action>>> 分组事件字典 = new ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentBag<Action>>>();
+    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentBag<Delegate>>> 分组事件泛型字典 = new ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentBag<Delegate>>>();
+    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentBag<Action<object[]>>>> 分组事件多参字典 = new ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentBag<Action<object[]>>>>();
+    private static readonly object 锁对象 = new object();
 
-    #region 事件注册方法
-    public static void 注册事件(string 事件名, Action 回调)
+    public static void 注册唯一事件(string 事件名称, Action 事件)
     {
-        if (!无参事件字典.ContainsKey(事件名))
-        {
-            无参事件字典[事件名] = new List<Action>();
-        }
-        无参事件字典[事件名].Add(回调);
+        if (string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        唯一事件字典.AddOrUpdate(事件名称, 事件, (key, oldValue) => 事件);
     }
 
-    public static void 注册事件<T>(string 事件名, Action<T> 回调)
+    public static void 注册唯一事件<T>(string 事件名称, Action<T> 事件)
     {
-        if (!有参事件字典.ContainsKey(事件名))
-        {
-            有参事件字典[事件名] = new List<Action<object>>();
-        }
-        有参事件字典[事件名].Add(obj => 回调((T)obj));
+        if (string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        唯一事件泛型字典.AddOrUpdate(事件名称, 事件, (key, oldValue) => 事件);
     }
 
-    public static void 注册事件(string 事件名, Action<object[]> 回调)
+    public static void 注册唯一事件(string 事件名称, Action<object[]> 事件)
     {
-        if (!多参事件字典.ContainsKey(事件名))
-        {
-            多参事件字典[事件名] = new List<Action<object[]>>();
-        }
-        多参事件字典[事件名].Add(回调);
+        if (string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        唯一事件多参字典.AddOrUpdate(事件名称, 事件, (key, oldValue) => 事件);
     }
-    #endregion
 
-    #region 事件注销方法
-    public static void 注销事件(string 事件名, Action 回调)
+    public static void 触发唯一事件(string 事件名称)
     {
-        if (无参事件字典.ContainsKey(事件名))
+        if (string.IsNullOrEmpty(事件名称)) return;
+        if (唯一事件字典.TryGetValue(事件名称, out Action 事件))
         {
-            无参事件字典[事件名].Remove(回调);
-            if (无参事件字典[事件名].Count == 0)
+            try { 事件?.Invoke(); }
+            catch (Exception e) { Debug.LogError($"唯一事件触发异常: {事件名称} - {e.Message}"); }
+        }
+    }
+
+    public static void 触发唯一事件<T>(string 事件名称, T 参数)
+    {
+        if (string.IsNullOrEmpty(事件名称)) return;
+        if (唯一事件泛型字典.TryGetValue(事件名称, out Delegate 事件))
+        {
+            try { (事件 as Action<T>)?.Invoke(参数); }
+            catch (Exception e) { Debug.LogError($"唯一事件触发异常: {事件名称} - {e.Message}"); }
+        }
+    }
+
+    public static void 触发唯一事件(string 事件名称, params object[] 参数)
+    {
+        if (string.IsNullOrEmpty(事件名称)) return;
+        if (唯一事件多参字典.TryGetValue(事件名称, out Action<object[]> 事件))
+        {
+            try { 事件?.Invoke(参数); }
+            catch (Exception e) { Debug.LogError($"唯一事件触发异常: {事件名称} - {e.Message}"); }
+        }
+    }
+
+    public static void 移除唯一事件(string 事件名称)
+    {
+        if (string.IsNullOrEmpty(事件名称)) return;
+        唯一事件字典.TryRemove(事件名称, out _);
+        唯一事件泛型字典.TryRemove(事件名称, out _);
+        唯一事件多参字典.TryRemove(事件名称, out _);
+    }
+
+    public static void 注册事件(string 事件名称, Action 事件) => 注册事件(默认分组, 事件名称, 事件);
+
+    public static void 注册事件(string 分组名称, string 事件名称, Action 事件)
+    {
+        if (string.IsNullOrEmpty(分组名称) || string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        分组事件字典.GetOrAdd(分组名称, _ => new ConcurrentDictionary<string, ConcurrentBag<Action>>()).GetOrAdd(事件名称, _ => new ConcurrentBag<Action>()).Add(事件);
+    }
+
+    public static void 注册事件<T>(string 事件名称, Action<T> 事件) => 注册事件(默认分组, 事件名称, 事件);
+
+    public static void 注册事件<T>(string 分组名称, string 事件名称, Action<T> 事件)
+    {
+        if (string.IsNullOrEmpty(分组名称) || string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        分组事件泛型字典.GetOrAdd(分组名称, _ => new ConcurrentDictionary<string, ConcurrentBag<Delegate>>()).GetOrAdd(事件名称, _ => new ConcurrentBag<Delegate>()).Add(事件);
+    }
+
+    public static void 注册事件(string 事件名称, Action<object[]> 事件) => 注册事件(默认分组, 事件名称, 事件);
+
+    public static void 注册事件(string 分组名称, string 事件名称, Action<object[]> 事件)
+    {
+        if (string.IsNullOrEmpty(分组名称) || string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        分组事件多参字典.GetOrAdd(分组名称, _ => new ConcurrentDictionary<string, ConcurrentBag<Action<object[]>>>()).GetOrAdd(事件名称, _ => new ConcurrentBag<Action<object[]>>()).Add(事件);
+    }
+
+    public static void 触发事件(string 事件名称)
+    {
+        if (string.IsNullOrEmpty(事件名称)) return;
+        foreach (var 分组 in 分组事件字典.Values)
+            if (分组.TryGetValue(事件名称, out var 事件列表))
+                foreach (var 事件 in 事件列表)
+                    try { 事件?.Invoke(); } catch (Exception e) { Debug.LogError($"分组事件触发异常: {事件名称} - {e.Message}"); }
+    }
+
+    public static void 触发事件<T>(string 事件名称, T 参数)
+    {
+        if (string.IsNullOrEmpty(事件名称)) return;
+        foreach (var 分组 in 分组事件泛型字典.Values)
+            if (分组.TryGetValue(事件名称, out var 事件列表))
+                foreach (var 事件 in 事件列表)
+                    try { (事件 as Action<T>)?.Invoke(参数); } catch (Exception e) { Debug.LogError($"分组事件触发异常: {事件名称} - {e.Message}"); }
+    }
+
+    public static void 触发事件(string 事件名称, params object[] 参数)
+    {
+        if (string.IsNullOrEmpty(事件名称)) return;
+        foreach (var 分组 in 分组事件多参字典.Values)
+            if (分组.TryGetValue(事件名称, out var 事件列表))
+                foreach (var 事件 in 事件列表)
+                    try { 事件?.Invoke(参数); } catch (Exception e) { Debug.LogError($"分组事件触发异常: {事件名称} - {e.Message}"); }
+    }
+
+    public static void 移除事件(string 事件名称, Action 事件) => 移除事件(默认分组, 事件名称, 事件);
+
+    public static void 移除事件(string 分组名称, string 事件名称, Action 事件)
+    {
+        if (string.IsNullOrEmpty(分组名称) || string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        lock (锁对象)
+        {
+            if (分组事件字典.TryGetValue(分组名称, out var 分组字典) && 分组字典.TryGetValue(事件名称, out var 事件列表))
             {
-                无参事件字典.Remove(事件名);
+                var 新列表 = new ConcurrentBag<Action>();
+                foreach (var 现有事件 in 事件列表) if (!ReferenceEquals(现有事件, 事件)) 新列表.Add(现有事件);
+                分组字典.TryUpdate(事件名称, 新列表, 事件列表);
             }
         }
     }
 
-    public static void 注销事件<T>(string 事件名, Action<T> 回调)
+    public static void 移除事件<T>(string 事件名称, Action<T> 事件) => 移除事件(默认分组, 事件名称, 事件);
+
+    public static void 移除事件<T>(string 分组名称, string 事件名称, Action<T> 事件)
     {
-        if (有参事件字典.ContainsKey(事件名))
+        if (string.IsNullOrEmpty(分组名称) || string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        lock (锁对象)
         {
-            有参事件字典[事件名].RemoveAll(action => action.Method == 回调.Method && action.Target == 回调.Target);
-            if (有参事件字典[事件名].Count == 0)
+            if (分组事件泛型字典.TryGetValue(分组名称, out var 分组字典) && 分组字典.TryGetValue(事件名称, out var 事件列表))
             {
-                有参事件字典.Remove(事件名);
+                var 新列表 = new ConcurrentBag<Delegate>();
+                foreach (var 现有事件 in 事件列表) if (!ReferenceEquals(现有事件, 事件)) 新列表.Add(现有事件);
+                分组字典.TryUpdate(事件名称, 新列表, 事件列表);
             }
         }
     }
 
-    public static void 注销事件(string 事件名, Action<object[]> 回调)
+    public static void 移除事件(string 事件名称, Action<object[]> 事件) => 移除事件(默认分组, 事件名称, 事件);
+
+    public static void 移除事件(string 分组名称, string 事件名称, Action<object[]> 事件)
     {
-        if (多参事件字典.ContainsKey(事件名))
+        if (string.IsNullOrEmpty(分组名称) || string.IsNullOrEmpty(事件名称) || 事件 == null) return;
+        lock (锁对象)
         {
-            多参事件字典[事件名].Remove(回调);
-            if (多参事件字典[事件名].Count == 0)
+            if (分组事件多参字典.TryGetValue(分组名称, out var 分组字典) && 分组字典.TryGetValue(事件名称, out var 事件列表))
             {
-                多参事件字典.Remove(事件名);
+                var 新列表 = new ConcurrentBag<Action<object[]>>();
+                foreach (var 现有事件 in 事件列表) if (!ReferenceEquals(现有事件, 事件)) 新列表.Add(现有事件);
+                分组字典.TryUpdate(事件名称, 新列表, 事件列表);
             }
         }
     }
 
-    public static void 注销所有事件(string 事件名)
+    public static void 移除事件(string 分组名称)
     {
-        无参事件字典.Remove(事件名);
-        有参事件字典.Remove(事件名);
-        多参事件字典.Remove(事件名);
+        if (string.IsNullOrEmpty(分组名称)) return;
+        分组事件字典.TryRemove(分组名称, out _);
+        分组事件泛型字典.TryRemove(分组名称, out _);
+        分组事件多参字典.TryRemove(分组名称, out _);
+    }
+
+    public static bool 唯一事件是否存在(string 事件名称) => !string.IsNullOrEmpty(事件名称) && (唯一事件字典.ContainsKey(事件名称) || 唯一事件泛型字典.ContainsKey(事件名称) || 唯一事件多参字典.ContainsKey(事件名称));
+
+    public static bool 分组事件是否存在(string 事件名称)
+    {
+        if (string.IsNullOrEmpty(事件名称)) return false;
+        foreach (var 分组 in 分组事件字典.Values) if (分组.ContainsKey(事件名称)) return true;
+        foreach (var 分组 in 分组事件泛型字典.Values) if (分组.ContainsKey(事件名称)) return true;
+        foreach (var 分组 in 分组事件多参字典.Values) if (分组.ContainsKey(事件名称)) return true;
+        return false;
+    }
+
+    public static int 获取分组事件监听数量(string 分组名称, string 事件名称)
+    {
+        if (string.IsNullOrEmpty(分组名称) || string.IsNullOrEmpty(事件名称)) return 0;
+        int 数量 = 0;
+        if (分组事件字典.TryGetValue(分组名称, out var 无参分组) && 无参分组.TryGetValue(事件名称, out var 无参事件列表)) 数量 += 无参事件列表.Count;
+        if (分组事件泛型字典.TryGetValue(分组名称, out var 有参分组) && 有参分组.TryGetValue(事件名称, out var 有参事件列表)) 数量 += 有参事件列表.Count;
+        if (分组事件多参字典.TryGetValue(分组名称, out var 多参分组) && 多参分组.TryGetValue(事件名称, out var 多参事件列表)) 数量 += 多参事件列表.Count;
+        return 数量;
+    }
+
+    public static List<string> 获取所有分组名称()
+    {
+        var 分组集合 = new HashSet<string>();
+        foreach (var 分组名 in 分组事件字典.Keys) 分组集合.Add(分组名);
+        foreach (var 分组名 in 分组事件泛型字典.Keys) 分组集合.Add(分组名);
+        foreach (var 分组名 in 分组事件多参字典.Keys) 分组集合.Add(分组名);
+        return new List<string>(分组集合);
     }
 
     public static void 清空所有事件()
     {
-        无参事件字典.Clear();
-        有参事件字典.Clear();
-        多参事件字典.Clear();
+        唯一事件字典.Clear();
+        唯一事件泛型字典.Clear();
+        唯一事件多参字典.Clear();
+        分组事件字典.Clear();
+        分组事件泛型字典.Clear();
+        分组事件多参字典.Clear();
     }
-    #endregion
 
-    #region 事件触发方法
-    public static void 触发事件(string 事件名)
+    public static string 获取系统状态()
     {
-        if (无参事件字典.ContainsKey(事件名))
+        var 状态信息 = new System.Text.StringBuilder();
+        状态信息.AppendLine("=== 事件系统状态 ===");
+        状态信息.AppendLine($"唯一事件数量: {唯一事件字典.Count + 唯一事件泛型字典.Count + 唯一事件多参字典.Count}");
+        状态信息.AppendLine($"分组数量: {获取所有分组名称().Count}");
+        foreach (var 分组名 in 获取所有分组名称())
         {
-            var 事件列表 = 无参事件字典[事件名];
-            for (int i = 事件列表.Count - 1; i >= 0; i--)
-            {
-                try
-                {
-                    事件列表[i]?.Invoke();
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"事件触发异常: {事件名} - {e.Message}");
-                }
-            }
+            int 总事件数 = 0;
+            if (分组事件字典.TryGetValue(分组名, out var 无参分组)) foreach (var 事件列表 in 无参分组.Values) 总事件数 += 事件列表.Count;
+            if (分组事件泛型字典.TryGetValue(分组名, out var 有参分组)) foreach (var 事件列表 in 有参分组.Values) 总事件数 += 事件列表.Count;
+            if (分组事件多参字典.TryGetValue(分组名, out var 多参分组)) foreach (var 事件列表 in 多参分组.Values) 总事件数 += 事件列表.Count;
+            状态信息.AppendLine($"分组 '{分组名}' 事件数量: {总事件数}");
         }
+        return 状态信息.ToString();
     }
-
-    public static void 触发事件<T>(string 事件名, T 参数)
-    {
-        if (有参事件字典.ContainsKey(事件名))
-        {
-            var 事件列表 = 有参事件字典[事件名];
-            for (int i = 事件列表.Count - 1; i >= 0; i--)
-            {
-                try
-                {
-                    事件列表[i]?.Invoke(参数);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"事件触发异常: {事件名} - {e.Message}");
-                }
-            }
-        }
-    }
-
-    public static void 触发事件(string 事件名, params object[] 参数)
-    {
-        if (多参事件字典.ContainsKey(事件名))
-        {
-            var 事件列表 = 多参事件字典[事件名];
-            for (int i = 事件列表.Count - 1; i >= 0; i--)
-            {
-                try
-                {
-                    事件列表[i]?.Invoke(参数);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"事件触发异常: {事件名} - {e.Message}");
-                }
-            }
-        }
-    }
-
-    public static void 延迟触发事件(string 事件名, float 延迟秒数)
-    {
-        Mono方法管理器.延迟执行(延迟秒数, () => 触发事件(事件名));
-    }
-
-    public static void 延迟触发事件<T>(string 事件名, T 参数, float 延迟秒数)
-    {
-        Mono方法管理器.延迟执行(延迟秒数, () => 触发事件(事件名, 参数));
-    }
-
-    public static void 延迟触发事件(string 事件名, float 延迟秒数, params object[] 参数)
-    {
-        Mono方法管理器.延迟执行(延迟秒数, () => 触发事件(事件名, 参数));
-    }
-    #endregion
-
-    #region 事件查询方法
-    public static bool 事件是否存在(string 事件名)
-    {
-        return 无参事件字典.ContainsKey(事件名) ||
-               有参事件字典.ContainsKey(事件名) ||
-               多参事件字典.ContainsKey(事件名);
-    }
-
-    public static int 获取事件监听数量(string 事件名)
-    {
-        int 数量 = 0;
-        if (无参事件字典.ContainsKey(事件名)) 数量 += 无参事件字典[事件名].Count;
-        if (有参事件字典.ContainsKey(事件名)) 数量 += 有参事件字典[事件名].Count;
-        if (多参事件字典.ContainsKey(事件名)) 数量 += 多参事件字典[事件名].Count;
-        return 数量;
-    }
-
-    public static List<string> 获取所有事件名称()
-    {
-        var 所有事件 = new HashSet<string>();
-        foreach (var 键 in 无参事件字典.Keys) 所有事件.Add(键);
-        foreach (var 键 in 有参事件字典.Keys) 所有事件.Add(键);
-        foreach (var 键 in 多参事件字典.Keys) 所有事件.Add(键);
-        return new List<string>(所有事件);
-    }
-    #endregion
-
-    #region MonoBehaviour扩展方法（融合事件系统扩展）
-    public static void 监听事件(this MonoBehaviour 对象, string 事件名, Action 回调)
-    {
-        注册事件(事件名, 回调);
-    }
-
-    public static void 监听事件<T>(this MonoBehaviour 对象, string 事件名, Action<T> 回调)
-    {
-        注册事件(事件名, 回调);
-    }
-
-    public static void 监听事件(this MonoBehaviour 对象, string 事件名, Action<object[]> 回调)
-    {
-        注册事件(事件名, 回调);
-    }
-
-    public static void 停止监听事件(this MonoBehaviour 对象, string 事件名, Action 回调)
-    {
-        注销事件(事件名, 回调);
-    }
-
-    public static void 停止监听事件<T>(this MonoBehaviour 对象, string 事件名, Action<T> 回调)
-    {
-        注销事件(事件名, 回调);
-    }
-
-    public static void 停止监听事件(this MonoBehaviour 对象, string 事件名, Action<object[]> 回调)
-    {
-        注销事件(事件名, 回调);
-    }
-
-    public static void 停止监听所有事件(this MonoBehaviour 对象, string 事件名)
-    {
-        注销所有事件(事件名);
-    }
-
-    public static void 触发事件(this MonoBehaviour 对象, string 事件名)
-    {
-        触发事件(事件名);
-    }
-
-    public static void 触发事件<T>(this MonoBehaviour 对象, string 事件名, T 参数)
-    {
-        触发事件(事件名, 参数);
-    }
-
-    public static void 触发事件(this MonoBehaviour 对象, string 事件名, params object[] 参数)
-    {
-        触发事件(事件名, 参数);
-    }
-
-    public static void 延迟触发事件(this MonoBehaviour 对象, string 事件名, float 延迟秒数)
-    {
-        延迟触发事件(事件名, 延迟秒数);
-    }
-
-    public static void 延迟触发事件<T>(this MonoBehaviour 对象, string 事件名, T 参数, float 延迟秒数)
-    {
-        延迟触发事件(事件名, 参数, 延迟秒数);
-    }
-
-    public static void 监听(string 事件名, Action 回调)
-    {
-        注册事件(事件名, 回调);
-    }
-
-    public static void 监听<T>(string 事件名, Action<T> 回调)
-    {
-        注册事件(事件名, 回调);
-    }
-
-    public static void 停止监听(string 事件名, Action 回调)
-    {
-        注销事件(事件名, 回调);
-    }
-
-    public static void 停止监听<T>(string 事件名, Action<T> 回调)
-    {
-        注销事件(事件名, 回调);
-    }
-
-    public static void 触发(string 事件名)
-    {
-        触发事件(事件名);
-    }
-
-    public static void 触发<T>(string 事件名, T 参数)
-    {
-        触发事件(事件名, 参数);
-    }
-
-    public static void 触发(string 事件名, params object[] 参数)
-    {
-        触发事件(事件名, 参数);
-    }
-
-    public static void 延迟触发(string 事件名, float 延迟秒数)
-    {
-        延迟触发事件(事件名, 延迟秒数);
-    }
-
-    public static void 延迟触发<T>(string 事件名, T 参数, float 延迟秒数)
-    {
-        延迟触发事件(事件名, 参数, 延迟秒数);
-    }
-    #endregion
 }

@@ -73,4 +73,32 @@ public class 道具管理 : ScriptableObject
             }
         }
     }
+    
+    private Dictionary<int, 道具类> 道具字典 = new Dictionary<int, 道具类>();
+
+    public void 初始化字典()
+    {
+        道具字典.Clear();
+        var 全部道具 = 道具列表;
+        if (全部道具 != null)
+        {
+            for (int i = 0; i < 全部道具.Count; i++)
+            {
+                var 道具 = 全部道具[i];
+                if (道具 != null)
+                {
+                    道具字典[道具.id] = 道具;
+                }
+            }
+        }
+    }
+
+    public 道具类 选择道具(int id)
+    {
+        if (道具字典.TryGetValue(id, out var 道具))
+        {
+            return 道具.Json深拷贝();
+        }
+        return null;
+    }
 }
