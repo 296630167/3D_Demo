@@ -9,7 +9,7 @@ public class 角色朝向脚本 : 基
     {
         根元素 = t.parent;
     }
-    public void 设置朝向(Vector3 目标位置)
+    public void 设置朝向(Vector3 目标位置, float 过度时间 = 0f)
     {
         // 使用根元素的位置计算方向，但控制角色模型的旋转
         Vector3 当前位置 = 根元素.position;
@@ -24,9 +24,10 @@ public class 角色朝向脚本 : 基
             Quaternion 偏移角度 = Quaternion.Euler(0, 角度偏移, 0);
             Quaternion 最终旋转 = 基础旋转 * 偏移角度;
 
-            // 只旋转角色模型，不影响根元素
-            t.rotation = 最终旋转;
-            //Debug.Log($"角色模型朝向设置: 目标位置{目标位置}, 最终旋转{最终旋转.eulerAngles}");
+            if (过度时间 > 0f)
+                t.设置旋转(最终旋转.eulerAngles, 过度时间);
+            else
+                t.rotation = 最终旋转;
         }
     }
 

@@ -134,20 +134,20 @@ public class 界面接口扩展脚本: MonoBehaviour,
 
         鼠标点击事件?.Invoke(eventData);
 
-        float 当前时间 = Time.time;
+        //float 当前时间 = Time.time;
 
-        if (eventData.button == PointerEventData.InputButton.Left)
-        {
-            处理左键点击(eventData, 当前时间);
-        }
-        else if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            处理右键点击(eventData, 当前时间);
-        }
-        else if (eventData.button == PointerEventData.InputButton.Middle)
-        {
-            处理中键点击(eventData, 当前时间);
-        }
+        //if (eventData.button == PointerEventData.InputButton.Left)
+        //{
+        //    处理左键点击(eventData, 当前时间);
+        //}
+        //else if (eventData.button == PointerEventData.InputButton.Right)
+        //{
+        //    处理右键点击(eventData, 当前时间);
+        //}
+        //else if (eventData.button == PointerEventData.InputButton.Middle)
+        //{
+        //    处理中键点击(eventData, 当前时间);
+        //}
     }
 
     #endregion

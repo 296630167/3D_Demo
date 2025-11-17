@@ -25,7 +25,7 @@ public static class 其它方法扩展
         }
         string 完整路径 = Path.Combine(保存路径, $"{文件名}_{DateTime.Now:yyyyMMdd_HHmmss}.png");
         ScreenCapture.CaptureScreenshot(完整路径);
-        Debug.Log($"截图已保存至: {完整路径}");
+        
     }
 
     public static void 打开游戏根目录(this object 对象)

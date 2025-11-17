@@ -9,7 +9,7 @@ public class 路线绘制器 : Graphic
     
     [Header("线条配置")]
     [SerializeField] private float 线条宽度 = 2f;
-    [SerializeField] private Color 线条颜色 = Color.yellow;
+    [SerializeField] private Color 线条颜色 = Color.white;
     [SerializeField] private bool 使用渐变色 = false;
     [SerializeField] private Color 起点颜色 = Color.green;
     [SerializeField] private Color 终点颜色 = Color.red;

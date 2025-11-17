@@ -17,11 +17,11 @@ public static class JSON扩展
         {
             string json内容 = JsonConvert.SerializeObject(对象, 序列化设置);
             File.WriteAllText(文件路径, json内容);
-            Debug.Log($"数据已保存到: {文件路径}");
+            
         }
         catch (Exception ex)
         {
-            Debug.LogError($"保存JSON文件失败: {ex.Message}");
+            
         }
     }
 
@@ -31,24 +31,24 @@ public static class JSON扩展
         {
             if (!File.Exists(文件路径))
             {
-                Debug.LogWarning($"文件不存在: {文件路径}，返回默认对象");
+                
                 return new T();
             }
 
             string json内容 = File.ReadAllText(文件路径);
             if (string.IsNullOrEmpty(json内容))
             {
-                Debug.LogWarning($"文件内容为空: {文件路径}，返回默认对象");
+                
                 return new T();
             }
 
             T 结果 = JsonConvert.DeserializeObject<T>(json内容, 序列化设置);
-            Debug.Log($"成功从文件读取数据: {文件路径}");
+            
             return 结果 ?? new T();
         }
         catch (Exception ex)
         {
-            Debug.LogError($"读取JSON文件失败: {ex.Message}，返回默认对象");
+            
             return new T();
         }
     }
@@ -60,17 +60,17 @@ public static class JSON扩展
             var 文本资源 = Resources.Load<TextAsset>(资源路径);
             if (文本资源 == null)
             {
-                Debug.LogWarning($"Resources中未找到文件: {资源路径}，返回默认对象");
+                
                 return new T();
             }
 
             T 结果 = JsonConvert.DeserializeObject<T>(文本资源.text, 序列化设置);
-            Debug.Log($"成功从Resources读取数据: {资源路径}");
+            
             return 结果 ?? new T();
         }
         catch (Exception ex)
         {
-            Debug.LogError($"从Resources读取JSON失败: {ex.Message}，返回默认对象");
+            
             return new T();
         }
     }
@@ -83,7 +83,7 @@ public static class JSON扩展
         }
         catch (Exception ex)
         {
-            Debug.LogError($"对象转换为JSON失败: {ex.Message}");
+            
             return string.Empty;
         }
     }
@@ -102,7 +102,7 @@ public static class JSON扩展
         }
         catch (Exception ex)
         {
-            Debug.LogError($"JSON字符串转换失败: {ex.Message}");
+            
             return new T();
         }
     }

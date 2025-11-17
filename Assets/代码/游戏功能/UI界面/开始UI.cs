@@ -6,7 +6,7 @@ public class 开始UI : 面板基类
     protected override void 开始时()
     {
         // var 副本 = new 副本类();
-        // 副本.副本房间管理 = new 副本房间管理器(5, 5);
+        // 副本.副本_房间管理 = new 副本_房间管理器(5, 5);
     }
     public void 开始游戏按钮() => StartCoroutine(开始游戏流程());
 

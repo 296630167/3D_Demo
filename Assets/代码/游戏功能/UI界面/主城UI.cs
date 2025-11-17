@@ -50,12 +50,12 @@ public class 主城UI : 面板基类
     public override void 显示()
     {
         base.显示();
-        g.打开();
+        g.显示();
     }
     public override void 隐藏()
     {
         base.隐藏();
-        g.关闭();
+        g.隐藏();
     }
     #region 滚动背景控制
     private void 初始化主城位置()
@@ -141,5 +141,11 @@ public class 主城UI : 面板基类
     public void 炼金铺()
     {
         // UI管理器.显示UI<炼金铺UI>("炼金铺UI", UI层级.弹窗);
+    }
+    public void 进入副本()
+    {
+        // 这里要隐藏主城UI
+        UI管理器.关闭UI("主城UI");
+        UI管理器.显示UI<副本UI>("副本UI", UI层级.弹窗, o => o.进入副本场景());
     }
 }

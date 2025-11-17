@@ -50,11 +50,11 @@ public abstract class 游戏数据管理器基类<T> : MonoBehaviour where T : �
         {
             初始化核心系统();
             初始化扩展系统();
-            Debug.Log($"{typeof(T).Name}初始化完成");
+            
         }
         catch (Exception ex)
         {
-            Debug.LogError($"{typeof(T).Name}初始化失败: {ex.Message}");
+            
         }
     }
     

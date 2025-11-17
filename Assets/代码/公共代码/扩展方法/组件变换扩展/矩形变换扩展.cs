@@ -154,7 +154,7 @@ public static class 矩形变换扩展
         if (矩形变换 != null)
         {
             Vector3 屏幕位置 = RectTransformUtility.WorldToScreenPoint(Camera.main, 矩形变换.position);
-            Debug.Log($"屏幕位置: {屏幕位置}");
+            
         }
         return 矩形变换;
     }

@@ -27,4 +27,11 @@ public class 角色类
     public float 魔法伤害 => 智力 * 魔法伤害修正;
     public int 血量上限 => 耐力 * 血量上限修正;
     public int 可移动格子距离 => 敏捷 + 移动格子修正;
+    public string 模型路径;
+    public int 当前血量;
+    public void 初始化()
+    {
+        当前血量 = 血量上限;
+    }
+
 }
