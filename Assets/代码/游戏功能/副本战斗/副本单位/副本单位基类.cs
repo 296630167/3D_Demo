@@ -13,7 +13,7 @@ public class 副本单位脚本 : 基
     public 角色朝向脚本 角色朝向;
     public 角色动画脚本 角色动画;
     public 角色移动脚本 角色移动;
-    public Dictionary<副本_房间_地图_格子,List<副本_房间_地图_格子>> 可移动范围字典 = new Dictionary<副本_房间_地图_格子, List<副本_房间_地图_格子>>();
+    public Dictionary<副本_房间_地图_格子, List<副本_房间_地图_格子>> 可移动范围字典 = new Dictionary<副本_房间_地图_格子, List<副本_房间_地图_格子>>();
     // 这个格子 需要自动去重
     public HashSet<副本_房间_地图_格子> 可移动范围格子哈希集 = new HashSet<副本_房间_地图_格子>();
     public List<副本_房间_地图_格子> 移动路径列表 = new List<副本_房间_地图_格子>();
@@ -32,7 +32,7 @@ public class 副本单位脚本 : 基
         锁定敌人单位 = null;
         GameObject 血条对象 = 对象池.取出对象("预制体/副本/血条");
         血条对象.transform.SetParent(t);
-        if(血条对象.GetComponent<血条组件>() == null)
+        if (血条对象.GetComponent<血条组件>() == null)
         {
             血条对象.AddComponent<血条组件>();
         }
@@ -59,7 +59,7 @@ public class 副本单位脚本 : 基
 
     public void 朝向目标格子(副本_房间_地图_格子 目标格子)
     {
-        if(目标格子!=null)
+        if (目标格子 != null)
         {
             角色朝向.设置朝向(目标格子.场景坐标);
         }
@@ -69,15 +69,16 @@ public class 副本单位脚本 : 基
     protected virtual void 计算可移动范围() => sj.副本UI.地图管理.计算格子上单位的可移动范围(this);
     public virtual bool 选择最近的可移动格子(副本_房间_地图_格子 格子, out 副本_房间_地图_格子 目标格子)
     {
-        if(格子==null || 可移动范围字典.Count == 0)
+        if (格子 == null || 可移动范围字典.Count == 0)
         {
             目标格子 = null;
             return false;
         }
-        if(可移动范围格子哈希集.Contains(格子) && 可移动范围字典.ContainsKey(格子))
+        if (可移动范围格子哈希集.Contains(格子) && 可移动范围字典.ContainsKey(格子))
         {
             目标格子 = 格子;
             计算移动路径(格子);
+            计算当前路径行动力消耗();
             return true;
         }
         // 在 可移动范围字典 里 选择距离这个格子最近的格子 返回
@@ -93,9 +94,10 @@ public class 副本单位脚本 : 基
             }
         }
         目标格子 = 最近格子;
-        if(最近格子!=null)
+        if (最近格子 != null)
         {
             计算移动路径(最近格子);
+            计算当前路径行动力消耗();
             return true;
         }
         return false;
@@ -148,7 +150,6 @@ public class 副本单位脚本 : 基
                 队列.Enqueue(邻居);
             }
         }
-
         if (起点格子 == 目标格子) return;
         if (!前驱.ContainsKey(目标格子)) return;
 
@@ -162,31 +163,36 @@ public class 副本单位脚本 : 基
         while (反序路径.Count > 0)
             移动路径列表.Add(反序路径.Pop());
     }
-    // 移动方法 
     private 副本_房间_地图_格子 移动起始所在格子;
     private 副本_房间_地图_格子 移动最后到达格子;
     public int 当前行动力可移动格子;
+    public int 本次移动消耗行动力;
+    public void 计算当前路径行动力消耗()
+    {
+        本次移动消耗行动力 = 0;
+        if (移动路径列表 == null || 移动路径列表.Count == 0) return;
+        int 步数 = 移动路径列表.Count;
+        int 每点行动力可移动格子距离 = 单位.角色属性.敏捷;
+        int 计算值 = Mathf.CeilToInt((float)步数 / 每点行动力可移动格子距离);
+        if (步数 > 0 && 计算值 <= 0) 计算值 = 1;
+        本次移动消耗行动力 = 计算值;
+    }
     public IEnumerator 开始移动携程()
     {
         if (移动路径列表 == null || 移动路径列表.Count == 0) yield break;
-        if (单位.剩余行动力 <= 0 && 当前行动力可移动格子 <= 0) yield break;
+        if (单位.剩余行动力 <= 0) yield break;
+        if (本次移动消耗行动力 <= 0) 计算当前路径行动力消耗();
+        if (单位.剩余行动力 < 本次移动消耗行动力) yield break;
+        单位.剩余行动力 -= 本次移动消耗行动力;
         yield return 启动携程(移动前携程());
         yield return 启动携程(移动中携程());
         yield return 启动携程(移动后携程());
     }
     public virtual IEnumerator 移动前携程()
     {
-        if (单位.剩余行动力 > 0 && 当前行动力可移动格子 <= 0)
-        {
-            单位.剩余行动力--;
-        }
         角色动画.设置动画参数("大剑跑步", true);
         移动起始所在格子 = 单位.所在格子;
         移动最后到达格子 = 移动起始所在格子;
-        if (当前行动力可移动格子 <= 0)
-        {
-            当前行动力可移动格子 = 单位.角色属性.敏捷;
-        }
         yield return null;
     }
     public virtual IEnumerator 移动中携程()
@@ -201,7 +207,7 @@ public class 副本单位脚本 : 基
             角色朝向.设置朝向(目标坐标, 0.1f);
             var 起始坐标 = t.v3();
             float 进度 = 0f;
-    
+
             while (进度 < 1f)
             {
                 进度 += Time.deltaTime / 段时长;
@@ -210,22 +216,9 @@ public class 副本单位脚本 : 基
                 Camera.main.跟随目标(t, 相机偏移, 相机跟随速度);
                 yield return null;
             }
-    
+
             移动最后到达格子 = 移动路径列表[0];
             移动路径列表.RemoveAt(0);
-            当前行动力可移动格子--;
-            if (当前行动力可移动格子 <= 0 && 移动路径列表.Count > 0)
-            {
-                if (单位.剩余行动力 > 0)
-                {
-                    单位.剩余行动力--;
-                    当前行动力可移动格子 = 单位.角色属性.敏捷;
-                }
-                else
-                {
-                    break;
-                }
-            }
         }
     }
     public virtual IEnumerator 移动后携程()
@@ -250,7 +243,7 @@ public class 副本单位脚本 : 基
         print(距离);
         return 距离 <= 1.5f;
     }
-    public virtual bool 检测敌人是否在技能范围内(副本单位 敌人单位,float 技能范围)
+    public virtual bool 检测敌人是否在技能范围内(副本单位 敌人单位, float 技能范围)
     {
         float 距离 = Vector3.Distance(单位.所在格子.场景坐标, 敌人单位.所在格子.场景坐标);
         return 距离 <= 技能范围;
@@ -289,6 +282,9 @@ public class 副本单位脚本 : 基
     #region 单体技能攻击
     public virtual IEnumerator 使用单体技能攻击敌人携程(副本单位脚本 敌人, 技能类 技能)
     {
+        if (技能 == null) yield break;
+        if (单位.剩余行动力 < 技能.消耗行动力) yield break;
+        单位.剩余行动力 -= 技能.消耗行动力;
         yield return 启动携程(使用单体技能攻击敌人前携程(敌人, 技能));
         yield return 启动携程(使用单体技能攻击敌人中携程(敌人, 技能));
         yield return 启动携程(使用单体技能攻击敌人后携程(敌人, 技能));
@@ -307,9 +303,9 @@ public class 副本单位脚本 : 基
     {
         print("进入使用单体技能后结算");
         角色动画.设置动画参数("大剑攻击", false);
-        bool 命中 = 计算命中结果(敌人,技能);
+        bool 命中 = 计算命中结果(敌人, 技能);
         int 最终伤害 = 1;
-        if(命中)
+        if (命中)
         {
             bool 格挡 = 计算格挡结果(敌人, 技能);
             if (格挡)
@@ -356,7 +352,9 @@ public class 副本单位脚本 : 基
     {
         print(敌人列表?.Count);
         if (敌人列表 == null || 敌人列表.Count == 0) yield break;
-        if (单位.剩余行动力 <= 0) yield break;
+        if (技能 == null) yield break;
+        if (单位.剩余行动力 < 技能.消耗行动力) yield break;
+        单位.剩余行动力 -= 技能.消耗行动力;
         角色动画.设置动画参数("大剑攻击", true);
         yield return new WaitForSeconds(角色动画.获取动画时长("大剑攻击"));
         角色动画.设置动画参数("大剑攻击", false);
@@ -397,7 +395,7 @@ public class 副本单位脚本 : 基
         print("开始显示伤害字体");
         显示伤害字体(最终伤害);
         print("伤害字体显示完成");
-        if(单位.角色属性.当前血量 <= 0)
+        if (单位.角色属性.当前血量 <= 0)
         {
             print("进入死亡分支");
             // 死亡
@@ -443,6 +441,7 @@ public class 副本单位脚本 : 基
     {
         单位.移动终点格子 = 检测敌人移动后是否在范围内(敌人.单位, 技能.射程 * 1.9f);
         计算移动路径(单位.移动终点格子);
+        计算当前路径行动力消耗();
         yield return 启动携程(移动前携程());
         yield return 启动携程(移动中携程());
         yield return 启动携程(移动后携程());

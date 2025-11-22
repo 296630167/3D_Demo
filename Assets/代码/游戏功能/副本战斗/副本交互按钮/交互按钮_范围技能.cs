@@ -24,6 +24,7 @@ public class 交互按钮_范围技能 : 交互按钮_基类
             return;
         }
         辅助线.绘制技能攻击范围(单位.单位.所在格子.场景坐标, 技能);
+        sj.副本UI.显示消耗行动力提示文本(技能.消耗行动力);
     }
 
     protected override void 离开交互按钮()
@@ -31,6 +32,7 @@ public class 交互按钮_范围技能 : 交互按钮_基类
         辅助线.取消绘制技能攻击范围();
         辅助线.取消绘制圆形区域(指示圈名称);
         清理范围高亮();
+        sj.副本UI.隐藏消耗行动力提示文本();
     }
 
     protected override void 进入交互按钮()
@@ -45,6 +47,7 @@ public class 交互按钮_范围技能 : 交互按钮_基类
         辅助线.取消绘制圆形区域(指示圈名称);
         上一次圆心 = Vector3.positiveInfinity;
         清理范围高亮();
+        sj.副本UI.隐藏消耗行动力提示文本();
     }
 
     protected override void 检测鼠标所在格子()
@@ -58,16 +61,18 @@ public class 交互按钮_范围技能 : 交互按钮_基类
         var 原点 = 单位.单位.所在格子.场景坐标;
         float 攻击半径 = 技能.射程 * 1.5f + 0.5f;
         var 偏移 = 圆心 - 原点;
-        if (偏移.magnitude > 攻击半径)
-        {
-            圆心 = 原点 + 偏移.normalized * 攻击半径;
-        }
+        // if (偏移.magnitude > 攻击半径)
+        // {
+        //     圆心 = 原点 + 偏移.normalized * 攻击半径;
+        // }
 
         if ((圆心 - 上一次圆心).sqrMagnitude < 0.0001f) return;
         上一次圆心 = 圆心;
 
         float 指示半径 = 技能.作用范围 * 1.5f + 0.5f;
-        辅助线.绘制圆形区域(指示圈名称, 圆心 + new Vector3(-0.005f, 0.01f, -0.005f), 指示半径, Color.white, 0.5f, 10);
+        bool 在射程内 = 偏移.magnitude <= 攻击半径;
+        var 颜色 = 在射程内 ? Color.gray : Color.red;
+        辅助线.绘制圆形区域(指示圈名称, 圆心 + new Vector3(-0.005f, 0.01f, -0.005f), 指示半径, 颜色, 0.5f, 10);
 
         清理范围高亮();
         标记范围内单位(圆心, 指示半径);

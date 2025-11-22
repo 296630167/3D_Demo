@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class 副本UI : 面板基类
 {
@@ -13,6 +14,9 @@ public class 副本UI : 面板基类
     public 副本场景 副本场景;
     public 小地图UI 小地图;
     public 辅助线绘制 辅助线;
+    private GameObject 消耗行动力提示对象;
+    private TMP_Text 消耗行动力提示文本;
+    private Vector2 消耗行动力提示偏移 = new Vector2(0f, -50f);
     public void 进入副本场景() => 启动携程(初始化副本携程());
     private IEnumerator 初始化副本携程()
     {
@@ -50,6 +54,12 @@ public class 副本UI : 面板基类
         对象池.创建对象池("预制体/副本/血条", 20);
         对象池.创建对象池("预制体/副本/伤害字体对象", 20);
         对象池.创建对象池("预制体/副本/死亡动画", 20);
+        消耗行动力提示对象 = 取.对象("副本/消耗行动力提示文本", t);
+        if (消耗行动力提示对象 != null)
+        {
+            消耗行动力提示对象.SetActive(false);
+            消耗行动力提示文本 = 消耗行动力提示对象.GetComponentInChildren<TMP_Text>();
+        }
         yield break;
     }
     public void 进入副本房间(副本_房间 房间)
@@ -134,5 +144,25 @@ public class 副本UI : 面板基类
         UI管理器.关闭UI("副本UI");
         // 显示主城UI
         UI管理器.显示UI<主城UI>("主城UI", UI层级.弹窗,o => o.进入());
+    }
+
+    protected override void 每帧更新()
+    {
+        if (消耗行动力提示对象 == null) return;
+        if (!消耗行动力提示对象.activeSelf) return;
+        消耗行动力提示对象.transform.position = (Vector2)Input.mousePosition + 消耗行动力提示偏移;
+    }
+
+    public void 显示消耗行动力提示文本(int 值)
+    {
+        if (消耗行动力提示对象 == null) return;
+        if (消耗行动力提示文本 != null) 消耗行动力提示文本.text = $"-{值}行动力";
+        消耗行动力提示对象.SetActive(true);
+    }
+
+    public void 隐藏消耗行动力提示文本()
+    {
+        if (消耗行动力提示对象 == null) return;
+        消耗行动力提示对象.SetActive(false);
     }
 }
