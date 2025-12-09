@@ -31,6 +31,12 @@ public class 副本UI : 面板基类
         cd.副本上阵单位数组[0] = new 副本单位() { 角色属性 = cd.主角,存在单位 = true };
         yield return null;
         进入副本房间(当前副本所有房间.入口);
+        var 固定格 = 地图管理.取格子或空(0, 0);
+        if (固定格 != null)
+        {
+            var 中心 = 固定格.场景坐标 + 辅助线.绘制偏移;
+            辅助线.绘制矩形区域("测试固定格", 中心, 辅助线.网格水平间距, 辅助线.网格垂直间距, Color.red, 0.4f, 20);
+        }
     }
     private IEnumerator 初始化副本相关资源()
     {
@@ -81,7 +87,8 @@ public class 副本UI : 面板基类
             房间.首次进入房间 = false;
             地图管理.分配房间单位坐标(房间, sj.副本UI.上一个房间);
         }
-        辅助线.初始化辅助线网格_原点(30, 30);
+        辅助线.设置菱形格尺寸(1f, 0.75f);
+        辅助线.初始化辅助线网格_菱形(Vector3.zero, 30, 30);
         // 场景对象
         副本场景.进入房间(房间);
     }
@@ -148,9 +155,8 @@ public class 副本UI : 面板基类
 
     protected override void 每帧更新()
     {
-        if (消耗行动力提示对象 == null) return;
-        if (!消耗行动力提示对象.activeSelf) return;
-        消耗行动力提示对象.transform.position = (Vector2)Input.mousePosition + 消耗行动力提示偏移;
+        if (消耗行动力提示对象 != null && 消耗行动力提示对象.activeSelf)
+            消耗行动力提示对象.transform.position = (Vector2)Input.mousePosition + 消耗行动力提示偏移;
     }
 
     public void 显示消耗行动力提示文本(int 值)
@@ -164,5 +170,12 @@ public class 副本UI : 面板基类
     {
         if (消耗行动力提示对象 == null) return;
         消耗行动力提示对象.SetActive(false);
+    }
+
+    public void 显示消耗行动力提示文本_自定义(string 文本)
+    {
+        if (消耗行动力提示对象 == null) return;
+        if (消耗行动力提示文本 != null) 消耗行动力提示文本.text = 文本 ?? string.Empty;
+        消耗行动力提示对象.SetActive(true);
     }
 }

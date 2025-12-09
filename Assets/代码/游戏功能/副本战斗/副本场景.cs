@@ -21,6 +21,7 @@ public class 副本场景 : 面板基类
         t.position = Vector3.zero;
         房间地图 = new Plane(Vector3.up, Vector3.zero);
         相机 = Camera.main;
+        相机.设置透明排序按Z(true);
         场景激活 = false;
     }
     protected override void 每帧更新()
@@ -34,9 +35,12 @@ public class 副本场景 : 面板基类
         if (房间地图.Raycast(ray, out float enter))
         {
             Vector3 世界坐标 = ray.GetPoint(enter);
-            int 行 = Mathf.FloorToInt(世界坐标.z / 0.5f);
-            int 列 = Mathf.FloorToInt(世界坐标.x / 0.5f);
-            //var 格子 = sj.副本UI.地图管理.取格子或空(行, 列);
+            float ax = 0.5f; // 列步长的x分量
+            float az = 0.375f; // 行/列步长的z分量
+            float 列实数 = (世界坐标.x / ax + 世界坐标.z / az) * 0.5f;
+            float 行实数 = (-世界坐标.x / ax + 世界坐标.z / az) * 0.5f;
+            int 行 = 行实数.向下取整();
+            int 列 = 列实数.向下取整();
             return sj.副本UI.地图管理.取格子或空(行, 列);
             //if(格子!=null)
             //{
@@ -51,10 +55,10 @@ public class 副本场景 : 面板基类
         当前房间 = 房间;
         创建房间地形(房间);
         创建玩家阵营(房间);
-        switch(房间.房间类型)
+        switch (房间.房间类型)
         {
             case 副本房间类型.战斗:
-                if(房间.可以离开当前房间) return;
+                if (房间.可以离开当前房间) return;
                 战斗房间逻辑(房间);
                 break;
         }
@@ -68,7 +72,7 @@ public class 副本场景 : 面板基类
     {
         玩家单位.Clear();
         玩家单位字典.Clear();
-        foreach(var r in cd.副本上阵单位数组)
+        foreach (var r in cd.副本上阵单位数组)
         {
             if (r == null || r.角色属性 == null) continue;
             GameObject 单位对象 = 对象池.取出对象("预制体/模型/爱丽丝");
@@ -81,7 +85,7 @@ public class 副本场景 : 面板基类
         // 相机 像酒馆的一样 默认看向 第一个玩家单位
         if (玩家单位.Count > 0)
         {
-            Camera.main.锁定单位(玩家单位[0].t, 5f, 5f, new Vector3(45f, 45f, 0f));
+            Camera.main.锁定单位(玩家单位[0].t, 5f, 5f, new Vector3(45f, 0f, 0f));
         }
     }
     private void 创建敌人阵营(副本_房间 房间)
@@ -116,9 +120,9 @@ public class 副本场景 : 面板基类
             敌人单位字典[r] = 单位脚本;
         }
     }
-#endregion
+    #endregion
     #region 离开房间逻辑
-       public void 离开房间(副本_房间 房间)
+    public void 离开房间(副本_房间 房间)
     {
         清理房间地形();
         清理玩家阵营();
@@ -141,7 +145,7 @@ public class 副本场景 : 面板基类
         清理单位阵营(敌人单位);
         敌人单位字典.Clear();
     }
-    
+
     private void 清理单位阵营<T>(List<T> 单位列表) where T : 副本单位脚本
     {
         for (int i = 0; i < 单位列表.Count; i++)
@@ -185,15 +189,15 @@ public class 副本场景 : 面板基类
         // 从0开始 遍历 战斗单位列表 
         // 找到 活着 的单位
         // 找到后 把这个单位 放到列表的最后
-        if(!战斗进行中)return;
-        
-        
+        if (!战斗进行中) return;
+
+
         for (int i = 0; i < 战斗单位列表.Count; i++)
         {
             var 单位 = 战斗单位列表[i];
             战斗单位列表.Remove(单位);
             战斗单位列表.Add(单位);
-            if(单位==null) continue;
+            if (单位 == null) continue;
             if (单位.单位.活着)
             {
                 当前行动单位 = 单位;
@@ -205,45 +209,45 @@ public class 副本场景 : 面板基类
 
     public IEnumerator 单位阵亡(副本单位脚本 单位)
     {
-        
-        
+
+
         if (单位 == null) yield break;
         GameObject 单位对象 = 单位.gameObject;
-        
+
         if (单位对象 == null) yield break;
         var 本体 = 单位.单位;
         if (本体 != null) 本体.活着 = false;
         Destroy(单位);
         对象池.归还对象(单位对象);
-        
-        
+
+
         yield return 启动携程(判断战斗是否结束());
-        
+
     }
 
     private IEnumerator 判断战斗是否结束()
     {
-        
-        if(玩家单位.All(单位 => !单位.单位.活着))
+
+        if (玩家单位.All(单位 => !单位.单位.活着))
         {
             战斗进行中 = false;
             StopAllCoroutines();
-            
+
             // 战斗失败 游戏结束
             sj.副本UI.显示游戏结束弹窗();
         }
-        else if(敌人单位.All(单位 => !单位.单位.活着))
+        else if (敌人单位.All(单位 => !单位.单位.活着))
         {
             战斗进行中 = false;
             StopAllCoroutines();
             // 战斗胜利 继续游戏
-            
+
             当前房间.可以离开当前房间 = true;
             // 显示小地图按钮
             sj.副本UI.刷新副本房间状态();
         }
-        
-        
+
+
         yield return null;
     }
     #endregion

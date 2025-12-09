@@ -141,3 +141,5 @@ Thumbs.db
 .lfs/
 # LFS临时文件
 *.lfs.*
+Build/
+Build_PC/

@@ -17,7 +17,7 @@ public class 血条组件 : MonoBehaviour
         最大血量值 = 最大血量;
         当前血量 = 最大血量值;
         transform.localPosition = new Vector3(0, 2, 0);
-        transform.localRotation = Quaternion.Euler(90, 45, 0);
+        transform.localRotation = Quaternion.Euler(90, 0, 0);
         transform.localScale = new Vector3(1, 0.1f, 1);
         更新比例();
     }

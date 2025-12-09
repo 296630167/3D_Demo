@@ -567,49 +567,6 @@ public static class 数据转换扩展
         
         return 是负数 ? -(int)整数部分 : (int)整数部分;
     }
-    
-    /// <summary>
-    /// 向上取整转换为整数
-    /// 任何有小数部分的数都会向上进位
-    /// </summary>
-    /// <param name="值">要转换的浮点数</param>
-    /// <returns>向上取整后的整数</returns>
-    public static int 向上取整(this float 值)
-    {
-        return Mathf.CeilToInt(值);
-    }
-    
-    /// <summary>
-    /// 向上取整转换为整数（double版本）
-    /// </summary>
-    /// <param name="值">要转换的双精度浮点数</param>
-    /// <returns>向上取整后的整数</returns>
-    public static int 向上取整(this double 值)
-    {
-        return (int)Math.Ceiling(值);
-    }
-    
-    /// <summary>
-    /// 向下取整转换为整数
-    /// 直接舍去小数部分
-    /// </summary>
-    /// <param name="值">要转换的浮点数</param>
-    /// <returns>向下取整后的整数</returns>
-    public static int 向下取整(this float 值)
-    {
-        return Mathf.FloorToInt(值);
-    }
-    
-    /// <summary>
-    /// 向下取整转换为整数（double版本）
-    /// </summary>
-    /// <param name="值">要转换的双精度浮点数</param>
-    /// <returns>向下取整后的整数</returns>
-    public static int 向下取整(this double 值)
-    {
-        return (int)Math.Floor(值);
-    }
-    
     /// <summary>
     /// 截断转换为整数
     /// 直接去掉小数部分，等同于强制类型转换

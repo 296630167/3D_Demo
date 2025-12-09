@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 public class 辅助线绘制 : 基
 {
+    #region 字段与参数
     [Header("网格设置")]
     public int 格子行 = 5;
     public int 格子列 = 5;
@@ -21,14 +22,17 @@ public class 辅助线绘制 : 基
     private GameObject 线条容器;
 
     [Header("参数")]
-    public float 网格间距 = 0.5f;   // 网格线间距（原先固定0.5）
-    public float 平面偏移 = -0.25f;  // 全局平移（用于把网格整体平移半格）
-    public Vector3 绘制偏移 = new Vector3(-0.005f, 0.01f, -0.005f);
+    public float 网格间距 = 0.5f;
+    public float 网格水平间距 = 1.0f;
+    public float 网格垂直间距 = 0.75f;
+    public float 平面偏移 = -0.25f;
+    public Vector3 绘制偏移 = new Vector3(0f, 0.01f, 0f);
 
     [Header("填充区域设置")]
     public Material 填充材质;
     private Dictionary<string, GameObject> 填充区域对象字典 = new Dictionary<string, GameObject>(); // 按名称管理多个区域
     private Dictionary<string, GameObject> 填充圆形对象字典 = new Dictionary<string, GameObject>(); // 按名称管理多个圆形区域
+    #endregion
     #region 显示控制
     public bool 是否显示 => 线条容器 && 线条容器.activeSelf;
     public void 切换显示() => 设置显示(!是否显示);
@@ -93,6 +97,89 @@ public class 辅助线绘制 : 基
 
     public void 重新绘制原点网格() => 初始化辅助线网格_原点(格子行, 格子列);
     public void 重新绘制网格() => 初始化辅助线网格(Vector3.zero, 格子行, 格子列);
+
+    public void 初始化辅助线网格_等距(Vector3 起点, int 行 = 5, int 列 = 5)
+    {
+        清理所有线条();
+        确保容器存在();
+        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+
+        float 半宽 = 线条宽度 * 0.5f;
+        float 水平偏移 = -列 * 网格水平间距 * 0.5f;
+        float 垂直偏移 = -行 * 网格垂直间距 * 0.5f;
+
+        for (int i = 0; i <= 行; i++)
+        {
+            float z = 起点.z + 垂直偏移 + i * 网格垂直间距;
+            创建线条(
+                new Vector3(起点.x + 水平偏移 - 半宽, 起点.y, z),
+                new Vector3(起点.x - 水平偏移 + 半宽, 起点.y, z),
+                $"水平线_{i}");
+        }
+
+        for (int i = 0; i <= 列; i++)
+        {
+            float x = 起点.x + 水平偏移 + i * 网格水平间距;
+            创建线条(
+                new Vector3(x, 起点.y, 起点.z + 垂直偏移 - 半宽),
+                new Vector3(x, 起点.y, 起点.z - 垂直偏移 + 半宽),
+                $"垂直线_{i}");
+        }
+
+        线条容器.SetActive(默认显示);
+    }
+
+    public void 初始化辅助线网格_原点_等距(int 行 = 5, int 列 = 5)
+    {
+        清理所有线条();
+        确保容器存在();
+        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+
+        float 半宽 = 线条宽度 * 0.5f;
+        float y = 0f;
+
+        for (int i = 0; i <= 行; i++)
+            创建线条(new Vector3(0 - 半宽, y, i * 网格垂直间距),
+                    new Vector3(列 * 网格水平间距 + 半宽, y, i * 网格垂直间距), $"水平线_{i}");
+
+        for (int i = 0; i <= 列; i++)
+            创建线条(new Vector3(i * 网格水平间距, y, 0 - 半宽),
+                    new Vector3(i * 网格水平间距, y, 行 * 网格垂直间距 + 半宽), $"垂直线_{i}");
+
+        线条容器.SetActive(默认显示);
+    }
+
+    public void 初始化辅助线网格_菱形(Vector3 起点, int 行 = 5, int 列 = 5)
+    {
+        清理所有线条();
+        确保容器存在();
+        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+
+        float a = 网格水平间距 * 0.5f;
+        float b = 网格垂直间距 * 0.5f;
+
+        for (int i = 0; i <= 行; i++)
+        {
+            Vector3 p0 = new Vector3(起点.x - i * a, 起点.y, 起点.z + i * b);
+            Vector3 p1 = new Vector3(起点.x + 列 * a - i * a, 起点.y, 起点.z + i * b + 列 * b);
+            创建线条(p0, p1, $"斜线_左上到右下_{i}");
+        }
+
+        for (int j = 0; j <= 列; j++)
+        {
+            Vector3 q0 = new Vector3(起点.x + j * a, 起点.y, 起点.z + j * b);
+            Vector3 q1 = new Vector3(起点.x + j * a - 行 * a, 起点.y, 起点.z + j * b + 行 * b);
+            创建线条(q0, q1, $"斜线_右上到左下_{j}");
+        }
+
+        线条容器.SetActive(默认显示);
+    }
+
+    public void 设置菱形格尺寸(float 水平, float 垂直)
+    {
+        网格水平间距 = 水平;
+        网格垂直间距 = 垂直;
+    }
     #endregion
 
     #region 线条工具
@@ -123,10 +210,11 @@ public class 辅助线绘制 : 基
     }
     #endregion
 
-    #region 填充矩形
+    #region 区域填充
     public void 绘制矩形区域(string 区域名称, Vector3 中心, float 宽 = 1.5f, float 高 = 1.5f, Color 颜色 = default, float 透明度 = 0.5f, int 层级 = 0)
     {
         // 如果区域名称已存在，先清理旧的
+        print(中心);
         if (填充区域对象字典.ContainsKey(区域名称))
         {
             取消绘制矩形区域(区域名称);
@@ -146,14 +234,14 @@ public class 辅助线绘制 : 基
 
         var 网格 = new Mesh();
         网格.vertices = new Vector3[] {
-            new Vector3(-半宽, 0, -半高),
-            new Vector3(半宽, 0, -半高),
-            new Vector3(-半宽, 0, 半高),
-            new Vector3(半宽, 0, 半高),
+            new Vector3(0f, 0f, 半高),
+            new Vector3(半宽, 0f, 0f),
+            new Vector3(0f, 0f, -半高),
+            new Vector3(-半宽, 0f, 0f),
         };
-        网格.triangles = new int[] { 0, 2, 1, 2, 3, 1 };
+        网格.triangles = new int[] { 0, 1, 3, 3, 1, 2 };
         网格.normals = new Vector3[] { Vector3.up, Vector3.up, Vector3.up, Vector3.up };
-        网格.uv = new Vector2[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) };
+        网格.uv = new Vector2[] { new Vector2(0.5f, 1f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0f), new Vector2(0f, 0.5f) };
         mf.sharedMesh = 网格;
 
         if (颜色 == default) 颜色 = Color.white;
@@ -282,7 +370,7 @@ public class 辅助线绘制 : 基
         var mf = go.AddComponent<MeshFilter>();
         var mr = go.AddComponent<MeshRenderer>();
 
-        float y = 0f;
+        float y = 中心.y;
         int 分段数 = 32; // 圆形分段数，保证平滑度
 
         var 网格 = new Mesh();
@@ -299,11 +387,12 @@ public class 辅助线绘制 : 基
         UV列表.Add(new Vector2(0.5f, 0.5f));
 
         // 添加圆周上的点（本地坐标）
+        float 垂直比例 = 网格垂直间距 / Mathf.Max(0.0001f, 网格水平间距);
         for (int i = 0; i <= 分段数; i++)
         {
             float 角度 = (float)i / 分段数 * 2f * Mathf.PI;
             float x = Mathf.Cos(角度) * 半径;
-            float z = Mathf.Sin(角度) * 半径;
+            float z = Mathf.Sin(角度) * 半径 * 垂直比例;
 
             顶点列表.Add(new Vector3(x, y, z));
             法线列表.Add(Vector3.up);
@@ -423,38 +512,38 @@ public class 辅助线绘制 : 基
         var 法线列表 = new List<Vector3>();
         var UV列表 = new List<Vector2>();
 
-        float 宽 = 0.5f;
-        float 高 = 0.5f;
+        float 宽 = 网格水平间距;
+        float 高 = 网格垂直间距;
         float 半宽 = 宽 * 0.5f;
         float 半高 = 高 * 0.5f;
 
         int 顶点起始索引 = 0;
         foreach (var 格子 in 单位.可移动范围格子哈希集)
         {
-            var c = 格子.场景坐标 + new Vector3(-0.005f, 0.01f, -0.005f);
-            float y = c.y;
+            var 中心 = 格子.场景坐标 + 绘制偏移;
+            float y = 中心.y;
 
-            顶点列表.Add(new Vector3(c.x - 半宽, y, c.z - 半高));
-            顶点列表.Add(new Vector3(c.x + 半宽, y, c.z - 半高));
-            顶点列表.Add(new Vector3(c.x - 半宽, y, c.z + 半高));
-            顶点列表.Add(new Vector3(c.x + 半宽, y, c.z + 半高));
+            顶点列表.Add(new Vector3(中心.x, y, 中心.z + 半高));
+            顶点列表.Add(new Vector3(中心.x + 半宽, y, 中心.z));
+            顶点列表.Add(new Vector3(中心.x, y, 中心.z - 半高));
+            顶点列表.Add(new Vector3(中心.x - 半宽, y, 中心.z));
 
             法线列表.Add(Vector3.up);
             法线列表.Add(Vector3.up);
             法线列表.Add(Vector3.up);
             法线列表.Add(Vector3.up);
 
-            UV列表.Add(new Vector2(0, 0));
-            UV列表.Add(new Vector2(1, 0));
-            UV列表.Add(new Vector2(0, 1));
-            UV列表.Add(new Vector2(1, 1));
+            UV列表.Add(new Vector2(0.5f, 1f));
+            UV列表.Add(new Vector2(1f, 0.5f));
+            UV列表.Add(new Vector2(0.5f, 0f));
+            UV列表.Add(new Vector2(0f, 0.5f));
 
             三角形列表.Add(顶点起始索引 + 0);
-            三角形列表.Add(顶点起始索引 + 2);
             三角形列表.Add(顶点起始索引 + 1);
-            三角形列表.Add(顶点起始索引 + 2);
+            三角形列表.Add(顶点起始索引 + 3);
             三角形列表.Add(顶点起始索引 + 3);
             三角形列表.Add(顶点起始索引 + 1);
+            三角形列表.Add(顶点起始索引 + 2);
 
             顶点起始索引 += 4;
         }
@@ -493,7 +582,7 @@ public class 辅助线绘制 : 基
     {
         if (显示)
         {
-            绘制矩形区域("移动目标", v3 + new Vector3(-0.005f, 0.01f, -0.005f), 1.5f, 1.5f, Color.green, 0.5f, 10);
+            绘制矩形区域("移动目标", v3 + 绘制偏移, 网格水平间距 * 3, 网格垂直间距 * 3, Color.green, 0.5f, 10);
         }
         else
         {
@@ -555,7 +644,7 @@ public class 辅助线绘制 : 基
 
     public void 绘制技能选择单位区域(Vector3 场景坐标, Color 颜色)
     {
-        绘制矩形区域("技能选择单位", 场景坐标 + 绘制偏移, 1.5f, 1.5f, 颜色, 0.5f, 10);
+        绘制矩形区域("技能选择单位", 场景坐标 + 绘制偏移, 网格水平间距, 网格垂直间距, 颜色, 0.5f, 10);
     }
     public void 取消绘制技能选择单位区域() => 取消绘制矩形区域("技能选择单位");
 }

@@ -305,9 +305,9 @@ public static class 其它方法扩展
         return Mathf.RoundToInt(数字);
     }
 
-    public static float 四舍五入(this float 数字)
+    public static int 四舍五入(this float 数字)
     {
-        return Mathf.Round(数字);
+        return Mathf.RoundToInt(数字);
     }
 
     public static int 向上取整(this int 数字)
@@ -315,9 +315,9 @@ public static class 其它方法扩展
         return Mathf.CeilToInt(数字);
     }
 
-    public static float 向上取整(this float 数字)
+    public static int 向上取整(this float 数字)
     {
-        return Mathf.Ceil(数字);
+        return Mathf.CeilToInt(数字);
     }
 
     public static int 向下取整(this int 数字)
@@ -325,11 +325,10 @@ public static class 其它方法扩展
         return Mathf.FloorToInt(数字);
     }
 
-    public static float 向下取整(this float 数字)
+    public static int 向下取整(this float 数字)
     {
-        return Mathf.Floor(数字);
+        return Mathf.FloorToInt(数字);
     }
-
     #endregion
 
     #region 向量计算

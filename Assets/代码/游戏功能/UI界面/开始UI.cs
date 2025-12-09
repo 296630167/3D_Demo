@@ -38,6 +38,7 @@ public class 开始UI : 面板基类
         }
         yield return null;
         UI管理器.关闭UI("开始UI");
+        Camera.main.设置透明排序按Z(true);
     }
 
     public void 继续游戏按钮() { }

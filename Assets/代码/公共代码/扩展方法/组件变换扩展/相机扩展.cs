@@ -231,4 +231,14 @@ public static class 相机扩展
 
         return 相机;
     }
+
+    public static Camera 设置透明排序按Z(this Camera 相机, bool Z小在前 = true)
+    {
+        if (相机 != null)
+        {
+            相机.transparencySortMode = TransparencySortMode.CustomAxis;
+            相机.transparencySortAxis = Z小在前 ? new Vector3(0f, 0f, 1f) : new Vector3(0f, 0f, -1f);
+        }
+        return 相机;
+    }
 }
