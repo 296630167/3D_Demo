@@ -149,7 +149,7 @@ public class 辅助线绘制 : 基
         线条容器.SetActive(默认显示);
     }
 
-    public void 初始化辅助线网格_菱形(Vector3 起点, int 行 = 5, int 列 = 5)
+    public IEnumerator 初始化辅助线网格_菱形(Vector3 起点, int 行 = 5, int 列 = 5)
     {
         清理所有线条();
         确保容器存在();
@@ -173,12 +173,14 @@ public class 辅助线绘制 : 基
         }
 
         线条容器.SetActive(默认显示);
+        yield return null;
     }
 
-    public void 设置菱形格尺寸(float 水平, float 垂直)
+    public IEnumerator 设置菱形格尺寸(float 水平, float 垂直)
     {
         网格水平间距 = 水平;
         网格垂直间距 = 垂直;
+        yield return null;
     }
     #endregion
 
@@ -213,8 +215,6 @@ public class 辅助线绘制 : 基
     #region 区域填充
     public void 绘制矩形区域(string 区域名称, Vector3 中心, float 宽 = 1.5f, float 高 = 1.5f, Color 颜色 = default, float 透明度 = 0.5f, int 层级 = 0)
     {
-        // 如果区域名称已存在，先清理旧的
-        print(中心);
         if (填充区域对象字典.ContainsKey(区域名称))
         {
             取消绘制矩形区域(区域名称);
@@ -468,13 +468,14 @@ public class 辅助线绘制 : 基
     }
     #endregion
     #region 清理与生命周期
-    public void 清理所有线条()
+    public IEnumerator 清理所有线条()
     {
         线条对象列表.ForEach(obj => { if (obj) DestroyImmediate(obj); });
         线条对象列表.Clear();
         取消绘制矩形区域(); // 清理所有矩形区域
         取消绘制圆形区域(); // 清理所有圆形区域
         if (线条容器) DestroyImmediate(线条容器);
+        yield return null;
     }
 
     private void 确保容器存在()

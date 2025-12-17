@@ -124,88 +124,88 @@ public static class 相机扩展
         return 相机;
     }
 
-    public static Camera 锁定位置(this Camera 相机, Vector3 目标位置)
-    {
-        if (相机 != null)
-        {
-            相机.transform.LookAt(目标位置);
-        }
-        return 相机;
-    }
+    //public static Camera 锁定位置(this Camera 相机, Vector3 目标位置)
+    //{
+    //    if (相机 != null)
+    //    {
+    //        相机.transform.LookAt(目标位置);
+    //    }
+    //    return 相机;
+    //}
 
-    public static Camera 锁定单位(this Camera 相机, Transform 目标单位)
-    {
-        if (相机 != null && 目标单位 != null)
-        {
-            Vector3 看向目标点 = 目标单位.position + Vector3.up * 1.5f;
-            相机.transform.LookAt(看向目标点);
-        }
-        return 相机;
-    }
+    //public static Camera 锁定单位(this Camera 相机, Transform 目标单位)
+    //{
+    //    if (相机 != null && 目标单位 != null)
+    //    {
+    //        Vector3 看向目标点 = 目标单位.position + Vector3.up * 1.5f;
+    //        相机.transform.LookAt(看向目标点);
+    //    }
+    //    return 相机;
+    //}
 
-    public static Camera 锁定位置(this Camera 相机, Vector3 目标位置, Vector3 位置偏移, Vector3 旋转角度)
-    {
-        if (相机 != null)
-        {
-            相机.transform.position = 目标位置 + 位置偏移;
-            相机.transform.eulerAngles = 旋转角度;
-        }
-        return 相机;
-    }
+    //public static Camera 锁定位置(this Camera 相机, Vector3 目标位置, Vector3 位置偏移, Vector3 旋转角度)
+    //{
+    //    if (相机 != null)
+    //    {
+    //        相机.transform.position = 目标位置 + 位置偏移;
+    //        相机.transform.eulerAngles = 旋转角度;
+    //    }
+    //    return 相机;
+    //}
 
-    public static Camera 锁定单位(this Camera 相机, Transform 目标单位, Vector3 位置偏移, Vector3 旋转角度)
-    {
-        if (相机 != null && 目标单位 != null)
-        {
-            相机.transform.position = 目标单位.position + 位置偏移;
-            相机.transform.eulerAngles = 旋转角度;
-        }
-        return 相机;
-    }
-    public static Camera 锁定位置(this Camera 相机, float 位置高度, float 正交大小, Vector3 旋转角度)
-    {
-        if (相机 != null)
-        {
-            float 差值 = 位置高度 / 2f;
-            相机.transform.position = new Vector3(-差值, 位置高度, -差值);
-            相机.orthographicSize = 正交大小;
-            相机.transform.eulerAngles = 旋转角度;
-        }
-        return 相机;
-    }
-    public static Camera 锁定单位(this Camera 相机, Transform 目标单位, float 位置高度, float 正交大小, Vector3 旋转角度)
-    {
-        if (相机 != null && 目标单位 != null)
-        {
-            float 差值 = 位置高度 / 2f;
-            相机.transform.position = 目标单位.position + new Vector3(-差值, 位置高度, -差值);
-            相机.orthographicSize = 正交大小;
-            相机.transform.eulerAngles = 旋转角度;
-        }
-        return 相机;
-    }
-    public static Camera 锁定单位(this Camera 相机, Transform 目标单位, float 位置高度, float 正交大小, Vector3 旋转角度, float 过渡时间)
-    {
-        if (相机 != null && 目标单位 != null)
-        {
-            float 差值 = 位置高度 / 2f;
-            Vector3 目标位置 = 目标单位.position + new Vector3(-差值, 位置高度, -差值);
+    //public static Camera 锁定单位(this Camera 相机, Transform 目标单位, Vector3 位置偏移, Vector3 旋转角度)
+    //{
+    //    if (相机 != null && 目标单位 != null)
+    //    {
+    //        相机.transform.position = 目标单位.position + 位置偏移;
+    //        相机.transform.eulerAngles = 旋转角度;
+    //    }
+    //    return 相机;
+    //}
+    //public static Camera 锁定位置(this Camera 相机, float 位置高度, float 正交大小, Vector3 旋转角度)
+    //{
+    //    if (相机 != null)
+    //    {
+    //        float 差值 = 位置高度 / 2f;
+    //        相机.transform.position = new Vector3(-差值, 位置高度, -差值);
+    //        相机.orthographicSize = 正交大小;
+    //        相机.transform.eulerAngles = 旋转角度;
+    //    }
+    //    return 相机;
+    //}
+    //public static Camera 锁定单位(this Camera 相机, Transform 目标单位, float 位置高度, float 正交大小, Vector3 旋转角度)
+    //{
+    //    if (相机 != null && 目标单位 != null)
+    //    {
+    //        float 差值 = 位置高度 / 2f;
+    //        相机.transform.position = 目标单位.position + new Vector3(0, 位置高度, 0);
+    //        相机.orthographicSize = 正交大小;
+    //        相机.transform.eulerAngles = 旋转角度;
+    //    }
+    //    return 相机;
+    //}
+    //public static Camera 锁定单位(this Camera 相机, Transform 目标单位, float 位置高度, float 正交大小, Vector3 旋转角度, float 过渡时间)
+    //{
+    //    if (相机 != null && 目标单位 != null)
+    //    {
+    //        float 差值 = 位置高度 / 2f;
+    //        Vector3 目标位置 = 目标单位.position + new Vector3(0, 位置高度, 0);
 
-            if (过渡时间 > 0f)
-            {
-                相机.transform.DOMove(目标位置, 过渡时间);
-                DOTween.To(() => 相机.orthographicSize, x => 相机.orthographicSize = x, 正交大小, 过渡时间);
-                相机.transform.DORotate(旋转角度, 过渡时间);
-            }
-            else
-            {
-                相机.transform.position = 目标位置;
-                相机.orthographicSize = 正交大小;
-                相机.transform.eulerAngles = 旋转角度;
-            }
-        }
-        return 相机;
-    }
+    //        if (过渡时间 > 0f)
+    //        {
+    //            相机.transform.DOMove(目标位置, 过渡时间);
+    //            DOTween.To(() => 相机.orthographicSize, x => 相机.orthographicSize = x, 正交大小, 过渡时间);
+    //            相机.transform.DORotate(旋转角度, 过渡时间);
+    //        }
+    //        else
+    //        {
+    //            相机.transform.position = 目标位置;
+    //            相机.orthographicSize = 正交大小;
+    //            相机.transform.eulerAngles = 旋转角度;
+    //        }
+    //    }
+    //    return 相机;
+    //}
     public static Camera 相机缩放(this Camera 相机,float 缩放值,float 最小缩放值 = 5f,float 最大缩放值 = 15f,float 动画时间 = 0f)
     {
         if (相机 == null || !相机.orthographic) return 相机;
@@ -232,13 +232,13 @@ public static class 相机扩展
         return 相机;
     }
 
-    public static Camera 设置透明排序按Z(this Camera 相机, bool Z小在前 = true)
-    {
-        if (相机 != null)
-        {
-            相机.transparencySortMode = TransparencySortMode.CustomAxis;
-            相机.transparencySortAxis = Z小在前 ? new Vector3(0f, 0f, 1f) : new Vector3(0f, 0f, -1f);
-        }
-        return 相机;
-    }
+    //public static Camera 设置透明排序按Z(this Camera 相机, bool Z小在前 = true)
+    //{
+    //    if (相机 != null)
+    //    {
+    //        相机.transparencySortMode = TransparencySortMode.CustomAxis;
+    //        相机.transparencySortAxis = Z小在前 ? new Vector3(0f, 0f, 1f) : new Vector3(0f, 0f, -1f);
+    //    }
+    //    return 相机;
+    //}
 }

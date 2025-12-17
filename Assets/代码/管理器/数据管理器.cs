@@ -12,8 +12,8 @@ public class 数据管理器 : 游戏数据管理器基类<数据管理器>
     private int _成功加载数量 = 0;
     private int _总数据数量 = 4;
     public 副本UI 副本UI;
+    public 新副本UI 新副本UI;
     public 副本场景 副本场景;
-    public 小地图UI 副本小地图;
     public 辅助线绘制 副本辅助线;
     public 交互按钮_管理器 副本交互按钮管理;
     public 数据加载状态 当前加载状态 => _当前加载状态;

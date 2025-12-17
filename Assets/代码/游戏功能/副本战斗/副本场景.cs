@@ -21,13 +21,11 @@ public class 副本场景 : 面板基类
         t.position = Vector3.zero;
         房间地图 = new Plane(Vector3.up, Vector3.zero);
         相机 = Camera.main;
-        相机.设置透明排序按Z(true);
         场景激活 = false;
     }
     protected override void 每帧更新()
     {
         if (!场景激活) return;
-        // 检测鼠标所在格子();
     }
     public 副本_房间_地图_格子 检测鼠标所在格子()
     {
@@ -50,19 +48,25 @@ public class 副本场景 : 面板基类
         return null;
     }
     #region 进入房间逻辑
-    public void 进入房间(副本_房间 房间)
+    public IEnumerator 进入房间(副本_房间 房间)
     {
         当前房间 = 房间;
+        更新地板贴图();
         创建房间地形(房间);
         创建玩家阵营(房间);
         switch (房间.房间类型)
         {
             case 副本房间类型.战斗:
-                if (房间.可以离开当前房间) return;
+                if (房间.可以离开当前房间) yield break;
                 战斗房间逻辑(房间);
                 break;
         }
         场景激活 = true;
+        yield return null;
+    }
+    private void 更新地板贴图()
+    {
+        组件<单一物体排序脚本>("副本地板").初始化("副本/地板/地板2", 20f, 0);
     }
     private void 创建房间地形(副本_房间 房间)
     {
@@ -85,7 +89,8 @@ public class 副本场景 : 面板基类
         // 相机 像酒馆的一样 默认看向 第一个玩家单位
         if (玩家单位.Count > 0)
         {
-            Camera.main.锁定单位(玩家单位[0].t, 5f, 5f, new Vector3(45f, 0f, 0f));
+            sj.新副本UI.相机锁定(玩家单位[0].t);
+            //Camera.main.锁定单位(玩家单位[0].t, 50f, 5f, new Vector3(90f, 0f, 0f));
         }
     }
     private void 创建敌人阵营(副本_房间 房间)
@@ -122,11 +127,12 @@ public class 副本场景 : 面板基类
     }
     #endregion
     #region 离开房间逻辑
-    public void 离开房间(副本_房间 房间)
+    public IEnumerator 离开房间(副本_房间 房间)
     {
         清理房间地形();
         清理玩家阵营();
         清理敌人阵营();
+        yield return null;
     }
 
     private void 清理房间地形()

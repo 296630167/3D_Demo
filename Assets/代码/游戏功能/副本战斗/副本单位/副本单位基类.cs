@@ -55,7 +55,7 @@ public class 副本单位脚本 : 基
         锁定敌人单位 = null;
         sj.副本场景.更新行动单位();
     }
-    protected virtual void 相机锁定() => Camera.main.锁定单位(t, 5f, 5f, new Vector3(45f, 0f, 0f), 0.5f);
+    protected virtual void 相机锁定() => sj.新副本UI.相机锁定(t.position);
 
     public void 朝向目标格子(副本_房间_地图_格子 目标格子)
     {
@@ -229,7 +229,7 @@ public class 副本单位脚本 : 基
         单位.所在格子 = 移动最后到达格子;
         单位.移动终点格子 = null;
         计算可移动范围();
-        Camera.main.锁定单位(t, 5f, 5f, new Vector3(45f, 0f, 0f), 0.3f);
+        //Camera.main.锁定单位(t, 5f, 5f, new Vector3(45f, 0f, 0f), 0.3f);
         yield return null;
     }
     #endregion

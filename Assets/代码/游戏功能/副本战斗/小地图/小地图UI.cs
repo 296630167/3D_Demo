@@ -12,7 +12,7 @@ public class 小地图UI : 面板基类
     RectTransform[,] 小地图格子数组;
     Image[,] 小地图格子图标数组;
     TMP_Text[,] 小地图格子文本数组;
-    public void 初始化(副本_房间管理 所有房间)
+    public IEnumerator 初始化(副本_房间管理 所有房间)
     {
         小地图格子数组 = new RectTransform[所有房间.副本_房间行数, 所有房间.副本_房间列数];
         小地图格子图标数组 = new Image[所有房间.副本_房间行数, 所有房间.副本_房间列数];
@@ -30,16 +30,18 @@ public class 小地图UI : 面板基类
                 // 更新房间格子UI(房间);
             }
         }
+        yield return null;
     }
-    public void 进入房间(副本_房间 房间)
+    public IEnumerator 进入房间(副本_房间 房间)
     {
         小地图格子文本数组[房间.行, 房间.列].text = (房间.房间类型 == 副本房间类型.入口 || 房间.房间类型 == 副本房间类型.出口) ? 房间.房间类型.ToString()[0].ToString() : "我";
         小地图格子文本数组[房间.行, 房间.列].color = Color.black;
         小地图格子图标数组[房间.行, 房间.列].color = Color.yellow;
         更新UI连线(房间);
         更新交互按钮区域状态(房间);
+        yield return null;
     }
-    public void 离开房间(副本_房间 房间)
+    public IEnumerator 离开房间(副本_房间 房间)
     {
         if (房间 != null && 房间.房间状态 == 副本房间状态.已探索)
         {
@@ -47,6 +49,7 @@ public class 小地图UI : 面板基类
             小地图格子文本数组[房间.行, 房间.列].color = Color.black;
             小地图格子图标数组[房间.行, 房间.列].color = Color.green;
         }
+        yield return null;
     }
     private void 更新UI连线(副本_房间 房间)
     {

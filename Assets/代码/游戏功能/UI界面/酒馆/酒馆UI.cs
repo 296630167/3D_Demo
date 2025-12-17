@@ -15,8 +15,8 @@ public class 酒馆UI : 面板基类
         // 初始化角色系统
         初始化角色系统();
         正在与酒馆单位对话 = false;
-        Camera.main.设置正交大小(25f);
-        Camera.main.锁定单位(主角模型.transform, new Vector3(-25f, 50f, -25f), new Vector3(45f, 45f, 0f));
+        //Camera.main.设置正交大小(25f);
+        //Camera.main.锁定单位(主角模型.transform, new Vector3(-25f, 50f, -25f), new Vector3(45f, 45f, 0f));
         UI管理器.当前页面 = 当前页面.酒馆;
     }
     
@@ -36,7 +36,7 @@ public class 酒馆UI : 面板基类
         // 检测主角如果是移动状态 设置相机跟随
         if (主角角色.当前状态 == 角色状态.移动)
         {
-            Camera.main.锁定单位(主角模型.transform, new Vector3(-25f, 50f, -25f), new Vector3(45f, 45f, 0f));
+            //Camera.main.锁定单位(主角模型.transform, new Vector3(-25f, 50f, -25f), new Vector3(45f, 45f, 0f));
         }
         else
         {
