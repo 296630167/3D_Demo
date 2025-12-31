@@ -16,9 +16,16 @@ public class 血条组件 : MonoBehaviour
         材质 = 渲染器 != null ? 渲染器.material : null;
         最大血量值 = 最大血量;
         当前血量 = 最大血量值;
-        transform.localPosition = new Vector3(0, 2, 0);
-        transform.localRotation = Quaternion.Euler(90, 0, 0);
-        transform.localScale = new Vector3(1, 0.1f, 1);
+        transform.localPosition = new Vector3(0f, 2f, 0f);
+        transform.设置旋转(new Vector3(45f, 0, 0));
+        transform.设置缩放(new Vector3(1f, 0.1f, 1f));
+        
+        // 设置渲染层级，确保血条显示在最前面
+        if (渲染器 != null)
+        {
+            渲染器.sortingOrder = 9999;
+        }
+        
         更新比例();
     }
     void 确保材质()

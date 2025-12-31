@@ -50,7 +50,7 @@ public class 辅助线绘制 : 基
     {
         清理所有线条();
         确保容器存在();
-        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+        线条材质 = 创建线条材质();
 
         float 水平偏移 = -行 * 网格间距 * 0.5f;
         float 垂直偏移 = -列 * 网格间距 * 0.5f;
@@ -79,7 +79,7 @@ public class 辅助线绘制 : 基
     {
         清理所有线条();
         确保容器存在();
-        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+        线条材质 = 创建线条材质();
 
         float 半宽 = 线条宽度 * 0.5f;
         float y = 0f;
@@ -102,7 +102,7 @@ public class 辅助线绘制 : 基
     {
         清理所有线条();
         确保容器存在();
-        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+        线条材质 = 创建线条材质();
 
         float 半宽 = 线条宽度 * 0.5f;
         float 水平偏移 = -列 * 网格水平间距 * 0.5f;
@@ -133,7 +133,7 @@ public class 辅助线绘制 : 基
     {
         清理所有线条();
         确保容器存在();
-        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+        线条材质 = 创建线条材质();
 
         float 半宽 = 线条宽度 * 0.5f;
         float y = 0f;
@@ -153,7 +153,7 @@ public class 辅助线绘制 : 基
     {
         清理所有线条();
         确保容器存在();
-        线条材质 ??= new Material(Shader.Find("Sprites/Default")) { color = 线条颜色 };
+        线条材质 = 创建线条材质();
 
         float a = 网格水平间距 * 0.5f;
         float b = 网格垂直间距 * 0.5f;
@@ -185,12 +185,38 @@ public class 辅助线绘制 : 基
     #endregion
 
     #region 线条工具
+    // 辅助线层级：值越小越靠前，需要比地板层级小
+    // 建议范围0-100，避免被着色器clamp截断
+    private static readonly float 辅助线层级 = (float)渲染层级.网格辅助线;
+    private static readonly int SortingLayerPropertyID = Shader.PropertyToID("_SortingLayer");
+    private const string SortingShaderName = "排序测试/物体排序着色器";
+    private Shader 排序着色器;
+    
     private void 创建线条(Vector3 起点, Vector3 终点, string 名称)
     {
         var 线条对象 = new GameObject(名称) { transform = { parent = 线条容器.transform } };
         var 渲染器 = 线条对象.AddComponent<LineRenderer>();
 
-        渲染器.material = 线条材质;
+        // 使用排序着色器创建材质
+        if (排序着色器 == null)
+        {
+            排序着色器 = Shader.Find(SortingShaderName);
+        }
+        
+        Material 排序材质;
+        if (排序着色器 != null)
+        {
+            排序材质 = new Material(排序着色器);
+            排序材质.SetFloat(SortingLayerPropertyID, 辅助线层级);
+            排序材质.SetColor("_BaseColor", 线条颜色);
+        }
+        else
+        {
+            // 备选：使用普通材质
+            排序材质 = 创建线条材质();
+        }
+        
+        渲染器.material = 排序材质;
         渲染器.startColor = 渲染器.endColor = 线条颜色;
         渲染器.startWidth = 渲染器.endWidth = 线条宽度;
         渲染器.useWorldSpace = true;
@@ -247,19 +273,23 @@ public class 辅助线绘制 : 基
         if (颜色 == default) 颜色 = Color.white;
         颜色.a = 透明度;
 
-        if (!填充材质)
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (!shader) shader = Shader.Find("Sprites/Default");
-            if (!shader) shader = Shader.Find("Unlit/Color");
-            填充材质 = new Material(shader);
-        }
+        // 使用项目排序着色器，与建筑参与同一套层级系统
+        var shader = Shader.Find("排序测试/物体排序着色器");
+        if (!shader) shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (!shader) shader = Shader.Find("Sprites/Default");
+        var 透明材质 = new Material(shader);
+        
+        // 启用透明度模式
+        透明材质.SetFloat("_Transparency", 1f);
+        透明材质.EnableKeyword("_TRANSPARENCY_ON");
+        // 开启深度写入，禁用背面剔除
+        透明材质.SetFloat("_ZWriteMode", 1f);
+        透明材质.SetFloat("_CullMode", (float)UnityEngine.Rendering.CullMode.Off);
+        // 设置层级和颜色
+        透明材质.SetFloat(Shader.PropertyToID("_SortingLayer"), 层级);
+        透明材质.SetColor("_BaseColor", 颜色);
 
-        var 材质实例 = mr.material;
-        材质实例.shader = 填充材质.shader;
-
-        应用透明材质并上色(材质实例, 颜色);
-        mr.sortingOrder = 层级;
+        mr.material = 透明材质;
 
         go.layer = gameObject.layer;
         go.transform.position = 中心;
@@ -370,7 +400,6 @@ public class 辅助线绘制 : 基
         var mf = go.AddComponent<MeshFilter>();
         var mr = go.AddComponent<MeshRenderer>();
 
-        float y = 中心.y;
         int 分段数 = 32; // 圆形分段数，保证平滑度
 
         var 网格 = new Mesh();
@@ -381,12 +410,12 @@ public class 辅助线绘制 : 基
         var 法线列表 = new List<Vector3>();
         var UV列表 = new List<Vector2>();
 
-        // 添加中心点（本地坐标）
-        顶点列表.Add(new Vector3(0f, y, 0f));
+        // 添加中心点（本地坐标，Y为0）
+        顶点列表.Add(new Vector3(0f, 0f, 0f));
         法线列表.Add(Vector3.up);
         UV列表.Add(new Vector2(0.5f, 0.5f));
 
-        // 添加圆周上的点（本地坐标）
+        // 添加圆周上的点（本地坐标，Y为0）
         float 垂直比例 = 网格垂直间距 / Mathf.Max(0.0001f, 网格水平间距);
         for (int i = 0; i <= 分段数; i++)
         {
@@ -394,7 +423,7 @@ public class 辅助线绘制 : 基
             float x = Mathf.Cos(角度) * 半径;
             float z = Mathf.Sin(角度) * 半径 * 垂直比例;
 
-            顶点列表.Add(new Vector3(x, y, z));
+            顶点列表.Add(new Vector3(x, 0f, z));
             法线列表.Add(Vector3.up);
 
             // UV坐标映射到圆形
@@ -403,12 +432,12 @@ public class 辅助线绘制 : 基
             UV列表.Add(new Vector2(u, v));
         }
 
-        // 创建三角形
+        // 创建三角形（反转顶点顺序，让面朝上）
         for (int i = 1; i <= 分段数; i++)
         {
             三角形列表.Add(0);      // 中心点
-            三角形列表.Add(i);      // 当前圆周点
             三角形列表.Add(i + 1);  // 下一个圆周点
+            三角形列表.Add(i);      // 当前圆周点
         }
 
         网格.vertices = 顶点列表.ToArray();
@@ -420,19 +449,23 @@ public class 辅助线绘制 : 基
         if (颜色 == default) 颜色 = Color.white;
         颜色.a = 透明度;
 
-        if (!填充材质)
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (!shader) shader = Shader.Find("Sprites/Default");
-            if (!shader) shader = Shader.Find("Unlit/Color");
-            填充材质 = new Material(shader);
-        }
+        // 使用项目排序着色器，与建筑参与同一套层级系统
+        var shader = Shader.Find("排序测试/物体排序着色器");
+        if (!shader) shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (!shader) shader = Shader.Find("Sprites/Default");
+        var 透明材质 = new Material(shader);
+        
+        // 启用透明度模式
+        透明材质.SetFloat("_Transparency", 1f);
+        透明材质.EnableKeyword("_TRANSPARENCY_ON");
+        // 开启深度写入，禁用背面剔除
+        透明材质.SetFloat("_ZWriteMode", 1f);
+        透明材质.SetFloat("_CullMode", (float)UnityEngine.Rendering.CullMode.Off);
+        // 设置层级和颜色
+        透明材质.SetFloat(Shader.PropertyToID("_SortingLayer"), 层级);
+        透明材质.SetColor("_BaseColor", 颜色);
 
-        var 材质实例 = mr.material;
-        材质实例.shader = 填充材质.shader;
-
-        应用透明材质并上色(材质实例, 颜色);
-        mr.sortingOrder = 层级;
+        mr.material = 透明材质;
 
         go.layer = gameObject.layer;
         go.transform.position = 中心;
@@ -468,6 +501,42 @@ public class 辅助线绘制 : 基
     }
     #endregion
     #region 清理与生命周期
+    
+    private Material 创建线条材质()
+    {
+        // 按优先级尝试不同的着色器
+        string[] 着色器列表 = new string[]
+        {
+            "Hidden/Internal-Colored",
+            "Sprites/Default", 
+            "Universal Render Pipeline/Unlit",
+            "Unlit/Color",
+            "UI/Default"
+        };
+        
+        Shader shader = null;
+        foreach (var 名称 in 着色器列表)
+        {
+            shader = Shader.Find(名称);
+            if (shader != null && shader.isSupported)
+                break;
+        }
+        
+        if (shader == null)
+        {
+            Debug.LogError("[辅助线绘制] 无法找到任何可用的着色器!");
+            return null;
+        }
+        
+        var mat = new Material(shader);
+        mat.color = 线条颜色;
+        if (mat.HasProperty("_Color")) mat.SetColor("_Color", 线条颜色);
+        if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", 线条颜色);
+        
+        //Debug.Log($"[辅助线绘制] 使用着色器: {shader.name}");
+        return mat;
+    }
+    
     public IEnumerator 清理所有线条()
     {
         线条对象列表.ForEach(obj => { if (obj) DestroyImmediate(obj); });
@@ -481,7 +550,9 @@ public class 辅助线绘制 : 基
     private void 确保容器存在()
     {
         if (!线条容器)
+        {
             线条容器 = new GameObject("辅助线网格容器") { transform = { parent = transform } };
+        }
     }
     protected override void 销毁时() => 清理所有线条();
     #endregion
@@ -558,22 +629,24 @@ public class 辅助线绘制 : 基
 
         mf.sharedMesh = 网格;
 
-        if (!填充材质)
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (!shader) shader = Shader.Find("Sprites/Default");
-            if (!shader) shader = Shader.Find("Unlit/Color");
-            填充材质 = new Material(shader);
-        }
+        // 使用项目排序着色器，与建筑参与同一套层级系统
+        var shader = Shader.Find("排序测试/物体排序着色器");
+        if (!shader) shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (!shader) shader = Shader.Find("Sprites/Default");
+        var 透明材质 = new Material(shader);
+        
+        // 启用透明度模式
+        透明材质.SetFloat("_Transparency", 1f);
+        透明材质.EnableKeyword("_TRANSPARENCY_ON");
+        // 开启深度写入
+        透明材质.SetFloat("_ZWriteMode", 1f);
+        // 设置层级，移动范围层
+        透明材质.SetFloat(Shader.PropertyToID("_SortingLayer"), (float)渲染层级.移动范围);
+        
+        var 颜色 = new Color(0.6f, 0.6f, 0.6f, 0.6f); // 更明显的灰色半透明
+        透明材质.SetColor("_BaseColor", 颜色);
 
-        var 材质实例 = mr.material;
-        材质实例.shader = 填充材质.shader;
-
-        var 颜色 = Color.white;
-        颜色.a = 0.5f;
-        应用透明材质并上色(材质实例, 颜色);
-
-        mr.sortingOrder = 0; // 移动区域层级=0
+        mr.material = 透明材质;
 
         go.layer = gameObject.layer;
         go.transform.position = Vector3.zero;
@@ -583,7 +656,8 @@ public class 辅助线绘制 : 基
     {
         if (显示)
         {
-            绘制矩形区域("移动目标", v3 + 绘制偏移, 网格水平间距 * 3, 网格垂直间距 * 3, Color.green, 0.5f, 10);
+            // 层级显示在移动范围上面，但在建筑下面
+            绘制矩形区域("移动目标", v3 + 绘制偏移, 网格水平间距 * 3, 网格垂直间距 * 3, Color.green, 0.5f, (int)渲染层级.交互区域);
         }
         else
         {
@@ -638,14 +712,16 @@ public class 辅助线绘制 : 基
 
     public void 绘制技能攻击范围(Vector3 坐标,技能类 技能)
     {
-        // 使用 绘制圆形区域 方法 大小为 技能的射程属性
-        绘制圆形区域("技能攻击范围", 坐标 + 绘制偏移, 技能.射程 * 1.5f + 0.5f, Color.gray, 0.5f, 10);
+        // 使用和移动范围一样的灰色半透明，显示在建筑下面
+        var 颜色 = new Color(0.6f, 0.6f, 0.6f, 0.6f);
+        绘制圆形区域("技能攻击范围", 坐标 + 绘制偏移, 技能.射程 * 1.5f + 0.5f, 颜色, 0.6f, (int)渲染层级.移动范围);
     }
     public void 取消绘制技能攻击范围() => 取消绘制圆形区域("技能攻击范围");
 
     public void 绘制技能选择单位区域(Vector3 场景坐标, Color 颜色)
     {
-        绘制矩形区域("技能选择单位", 场景坐标 + 绘制偏移, 网格水平间距, 网格垂直间距, 颜色, 0.5f, 10);
+        // 3x3格子区域，层级90显示在攻击范围(层级95)上面
+        绘制矩形区域("技能选择单位", 场景坐标 + 绘制偏移, 网格水平间距 * 3, 网格垂直间距 * 3, 颜色, 0.5f, 90);
     }
     public void 取消绘制技能选择单位区域() => 取消绘制矩形区域("技能选择单位");
 }

@@ -22,7 +22,7 @@ public class 副本玩家单位 : 副本单位脚本
     public override void 回合结束()
     {
         交互按钮可点击 = false;
-        // sj.副本UI.清理交互按钮();
+        // sj.新副本UI.清理交互按钮();
         sj.副本交互按钮管理.清理按钮();
         base.回合结束();
     }

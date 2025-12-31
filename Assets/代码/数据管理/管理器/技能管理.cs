@@ -37,14 +37,14 @@ public class 技能管理 : ScriptableObject
             for (int i = 0; i < 技能列表.Count; i++)
             {
                 var 技能 = 技能列表[i];
-                Debug.Log($"技能ID: {技能.id}, 技能名称: {技能.名称}");
+                //Debug.Log($"技能ID: {技能.id}, 技能名称: {技能.名称}");
                 if (技能 != null)
                 {
                     技能字典[技能.id] = 技能;
                 }
             }
         }
-        Debug.Log(选择技能(1));
+        //Debug.Log(选择技能(1));
     }
     
     public 技能类 选择技能(int id)

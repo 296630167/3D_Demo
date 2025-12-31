@@ -135,8 +135,8 @@ public class 小地图UI : 面板基类
             对象("右").切换显示(房间.右);
         }
     }
-    private void 上() => sj.副本UI.前往副本房间(0);
-    private void 下() => sj.副本UI.前往副本房间(1);
-    private void 左() => sj.副本UI.前往副本房间(2);
-    private void 右() => sj.副本UI.前往副本房间(3);
+    private void 上() => sj.新副本UI.前往副本房间(0);
+    private void 下() => sj.新副本UI.前往副本房间(1);
+    private void 左() => sj.新副本UI.前往副本房间(2);
+    private void 右() => sj.新副本UI.前往副本房间(3);
 }

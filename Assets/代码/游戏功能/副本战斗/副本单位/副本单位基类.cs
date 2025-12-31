@@ -13,6 +13,7 @@ public class 副本单位脚本 : 基
     public 角色朝向脚本 角色朝向;
     public 角色动画脚本 角色动画;
     public 角色移动脚本 角色移动;
+    public 组合物体排序脚本 排序脚本;
     public Dictionary<副本_房间_地图_格子, List<副本_房间_地图_格子>> 可移动范围字典 = new Dictionary<副本_房间_地图_格子, List<副本_房间_地图_格子>>();
     // 这个格子 需要自动去重
     public HashSet<副本_房间_地图_格子> 可移动范围格子哈希集 = new HashSet<副本_房间_地图_格子>();
@@ -25,13 +26,18 @@ public class 副本单位脚本 : 基
         单位.活着 = true;
         单位.行为 = 副本单位行为状态.待机;
         单位.移动终点格子 = null;
+        变换("旋转锚点").设置旋转(new Vector3(45,0,0));
         角色朝向 = 对象("角色").AddComponent<角色朝向脚本>();
         角色动画 = 对象("角色").AddComponent<角色动画脚本>();
         角色移动 = 对象("角色").AddComponent<角色移动脚本>();
+        // 获取排序脚本，如果没有则添加
+        排序脚本 = GetComponent<组合物体排序脚本>();
+        if (排序脚本 == null) 排序脚本 = gameObject.AddComponent<组合物体排序脚本>();
+        排序脚本.设置层级(单位.所在格子.场景坐标.z);
         t.设置位置(单位.所在格子.场景坐标);
         锁定敌人单位 = null;
         GameObject 血条对象 = 对象池.取出对象("预制体/副本/血条");
-        血条对象.transform.SetParent(t);
+        血条对象.transform.SetParent(变换("旋转锚点"));
         if (血条对象.GetComponent<血条组件>() == null)
         {
             血条对象.AddComponent<血条组件>();
@@ -55,7 +61,7 @@ public class 副本单位脚本 : 基
         锁定敌人单位 = null;
         sj.副本场景.更新行动单位();
     }
-    protected virtual void 相机锁定() => sj.新副本UI.相机锁定(t.position);
+    protected virtual void 相机锁定(float 过渡时间 = 0f) => sj.新副本UI.相机锁定(t.position, 过渡时间);
 
     public void 朝向目标格子(副本_房间_地图_格子 目标格子)
     {
@@ -66,7 +72,7 @@ public class 副本单位脚本 : 基
     }
     #region  移动相关代码
     #region  移动相关数据计算
-    protected virtual void 计算可移动范围() => sj.副本UI.地图管理.计算格子上单位的可移动范围(this);
+    protected virtual void 计算可移动范围() => sj.新副本UI.地图管理.计算格子上单位的可移动范围(this);
     public virtual bool 选择最近的可移动格子(副本_房间_地图_格子 格子, out 副本_房间_地图_格子 目标格子)
     {
         if (格子 == null || 可移动范围字典.Count == 0)
@@ -128,14 +134,14 @@ public class 副本单位脚本 : 基
             if (当前格子 == 目标格子) break;
 
             var 邻居数组 = new[]{
-                sj.副本UI.地图管理.目标格子上(当前格子),
-                sj.副本UI.地图管理.目标格子下(当前格子),
-                sj.副本UI.地图管理.目标格子左(当前格子),
-                sj.副本UI.地图管理.目标格子右(当前格子),
-                sj.副本UI.地图管理.目标格子左上(当前格子),
-                sj.副本UI.地图管理.目标格子右上(当前格子),
-                sj.副本UI.地图管理.目标格子左下(当前格子),
-                sj.副本UI.地图管理.目标格子右下(当前格子)
+                sj.新副本UI.地图管理.目标格子上(当前格子),
+                sj.新副本UI.地图管理.目标格子下(当前格子),
+                sj.新副本UI.地图管理.目标格子左(当前格子),
+                sj.新副本UI.地图管理.目标格子右(当前格子),
+                sj.新副本UI.地图管理.目标格子左上(当前格子),
+                sj.新副本UI.地图管理.目标格子右上(当前格子),
+                sj.新副本UI.地图管理.目标格子左下(当前格子),
+                sj.新副本UI.地图管理.目标格子右下(当前格子)
             };
 
             for (int i = 0; i < 邻居数组.Length; i++)
@@ -198,9 +204,8 @@ public class 副本单位脚本 : 基
     public virtual IEnumerator 移动中携程()
     {
         const float 段时长 = 0.2f;
-        float 相机位置高度 = 5f;
-        float 相机跟随速度 = 8f;
-        Vector3 相机偏移 = new Vector3(-相机位置高度 / 2f, 相机位置高度, -相机位置高度 / 2f);
+        float 相机跟随速度 = 15f; // 提高跟随速度
+        Vector3 相机偏移 = new Vector3(0f, 50f, 0f); // 俯视相机偏移
         while (移动路径列表.Count > 0)
         {
             var 目标坐标 = 移动路径列表[0].场景坐标;
@@ -218,19 +223,23 @@ public class 副本单位脚本 : 基
             }
 
             移动最后到达格子 = 移动路径列表[0];
+            // 每次到达新格子时更新排序层级
+            if (排序脚本 != null) 排序脚本.设置层级(移动最后到达格子.场景坐标.z);
             移动路径列表.RemoveAt(0);
         }
     }
     public virtual IEnumerator 移动后携程()
     {
         角色动画.设置动画参数("大剑跑步", false);
-        sj.副本UI.地图管理.清理格子单位(移动起始所在格子);
-        sj.副本UI.地图管理.分配格子单位(单位, 移动最后到达格子);
+        sj.新副本UI.地图管理.清理格子单位(移动起始所在格子);
+        sj.新副本UI.地图管理.分配格子单位(单位, 移动最后到达格子);
         单位.所在格子 = 移动最后到达格子;
         单位.移动终点格子 = null;
         计算可移动范围();
-        //Camera.main.锁定单位(t, 5f, 5f, new Vector3(45f, 0f, 0f), 0.3f);
-        yield return null;
+        
+        float 相机过渡时间 = 0.3f;
+        相机锁定(相机过渡时间);
+        yield return new WaitForSeconds(相机过渡时间); // 等待相机过渡完成
     }
     #endregion
     #endregion
@@ -413,7 +422,7 @@ public class 副本单位脚本 : 基
             死亡动画.transform.DOScale(Vector3.one * 0.2f, 0.3f);
             print("死亡动画创建完成");
             print("准备清理格子单位");
-            sj.副本UI.地图管理.清理格子单位(单位.所在格子);
+            sj.新副本UI.地图管理.清理格子单位(单位.所在格子);
             print("清理格子单位完成");
             print("准备更新当前行动单位可移动范围");
             sj.副本场景.当前行动单位.计算可移动范围();

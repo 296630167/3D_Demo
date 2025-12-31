@@ -27,6 +27,7 @@ public partial class 副本_房间
         }
     }
     public bool 可以离开当前房间;
+    public List<副本建筑> 建筑列表 = new List<副本建筑>();
     public 副本_房间(int 行, int 列)
     {
         this.行 = 行;

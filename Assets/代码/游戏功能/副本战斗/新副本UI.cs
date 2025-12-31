@@ -19,7 +19,7 @@ public class 新副本UI : 面板基类
     private 小地图UI 小地图;
 
     public 副本场景 副本场景;
-    private 辅助线绘制 辅助线;
+    public 辅助线绘制 辅助线;
 
     private GameObject 消耗行动力提示对象;
     private TMP_Text 消耗行动力提示文本;
@@ -30,7 +30,7 @@ public class 新副本UI : 面板基类
         print("正在进入副本场景,初始化副本相关资源");
         sj.新副本UI = this;
         地图相机 = GameObject.Find("副本地图相机").GetComponent<Camera>();
-        人物相机 = GameObject.Find("副本人物相机").GetComponent<Camera>();
+        // 人物相机 = GameObject.Find("副本人物相机").GetComponent<Camera>();
         // 后面把这行注释掉 用正常存档数据
         cd.初始化新存档();
         yield return 启动携程(初始化副本数据());
@@ -104,17 +104,9 @@ public class 新副本UI : 面板基类
     private IEnumerator 更新副本房间场景(副本_房间 房间)
     {
         地图管理 = 当前所在房间.房间地图;
-        // 暂时写一个新的初始化方法
-        // 
-        yield return 启动携程(地图管理.初始化新房间数据(房间));
-
-        // yield return 启动携程(地图管理.初始化地图格子());
-        // yield return 启动携程(地图管理.分配玩家单位坐标(cd.副本上阵单位数组, 房间, 上一个房间));
-        // if(房间.首次进入房间)
-        // {
-        //     房间.首次进入房间 = false;
-        //     yield return 启动携程(地图管理.分配房间单位坐标(房间, 上一个房间));
-        // }
+        print(地图管理);
+        // 初始化房间数据（建筑、玩家单位、敌人等）
+        yield return 启动携程(地图管理.初始化新房间数据(房间, 上一个房间, cd.副本上阵单位数组));
         yield return 启动携程(辅助线.设置菱形格尺寸(1f, 0.75f));
         yield return 启动携程(辅助线.初始化辅助线网格_菱形(Vector3.zero, 30, 30));
         yield return 启动携程(副本场景.进入房间(房间));
@@ -156,7 +148,7 @@ public class 新副本UI : 面板基类
         锁定单个相机(地图相机, 锁定坐标, new Vector3(0f, 50f, 0f), new Vector3(90f, 0f, 0f), 过渡时间);
         
         // 锁定人物相机到指定位置（基于默认坐标 0,50,-50）
-        锁定单个相机(人物相机, 锁定坐标, new Vector3(0f, 50f, -50f), new Vector3(45f, 0f, 0f), 过渡时间);
+        // 锁定单个相机(人物相机, 锁定坐标, new Vector3(0f, 50f, -50f), new Vector3(45f, 0f, 0f), 过渡时间);
     }
     public void 相机锁定(Transform 目标单位, float 过渡时间 = 0f)
     {

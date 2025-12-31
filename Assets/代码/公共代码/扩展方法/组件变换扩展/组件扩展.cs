@@ -55,9 +55,9 @@ public static class 组件扩展
         if (变换 != null)
         {
             if (动画时间 > 0f)
-                变换.DORotate(欧拉角, 动画时间);
+                变换.DOLocalRotate(欧拉角, 动画时间);
             else
-                变换.eulerAngles = 欧拉角;
+                变换.localEulerAngles = 欧拉角;
         }
         return 变换;
     }

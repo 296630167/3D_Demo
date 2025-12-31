@@ -7,7 +7,7 @@ public class 交互按钮_基类 : 基
 {
     protected 副本玩家单位 单位;
     protected 技能类 技能;
-    public 辅助线绘制 辅助线 => sj.副本辅助线;
+    public 辅助线绘制 辅助线 => sj.新副本UI.辅助线;
     public 副本场景 场景 => sj.副本场景;
     protected 交互按钮_管理器 管理器 => sj.副本交互按钮管理;
     protected bool 已初始化;
