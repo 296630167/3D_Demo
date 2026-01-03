@@ -90,7 +90,8 @@ public class 副本敌人单位 : 副本单位脚本
     }
     public override IEnumerator 被攻击(int 最终伤害)
     {
-        yield return StartCoroutine(base.被攻击(单位.角色属性.血量上限));
+        //yield return StartCoroutine(base.被攻击(单位.角色属性.血量上限));
+        yield return StartCoroutine(base.被攻击(最终伤害));
     }
     public override IEnumerator 使用单体技能攻击敌人携程(副本单位脚本 敌人, 技能类 技能)
     {

@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 public class 角色编辑器 : EditorWindow
 {
@@ -12,13 +14,19 @@ public class 角色编辑器 : EditorWindow
     }
 
     private 角色管理 角色数据;
+    private 道具管理 道具数据;
     private const string 角色数据路径 = "Assets/Resources/数据/角色数据.asset";
+    private const string 道具数据路径 = "Assets/Resources/数据/道具数据.asset";
     private 角色类 当前选中角色;
     private Vector2 角色列表滚动位置;
+    
+    private List<武器> 所有武器列表;
+    private string[] 武器名称列表;
 
     private void OnEnable()
     {
         角色数据 = AssetDatabase.LoadAssetAtPath<角色管理>(角色数据路径);
+        道具数据 = AssetDatabase.LoadAssetAtPath<道具管理>(道具数据路径);
 
         if (角色数据 == null)
         {
@@ -27,6 +35,34 @@ public class 角色编辑器 : EditorWindow
         else
         {
             Debug.Log($"成功加载角色数据: {角色数据路径}");
+        }
+        
+        if (道具数据 == null)
+        {
+            Debug.LogWarning($"无法在路径 {道具数据路径} 找到道具数据文件");
+        }
+        else
+        {
+            刷新武器列表();
+        }
+    }
+    
+    private void 刷新武器列表()
+    {
+        if (道具数据 == null) return;
+        
+        所有武器列表 = new List<武器>();
+        所有武器列表.AddRange(道具数据.单手武器列表);
+        所有武器列表.AddRange(道具数据.双手武器列表);
+        所有武器列表.AddRange(道具数据.远程武器列表);
+        所有武器列表.AddRange(道具数据.法杖列表);
+        
+        武器名称列表 = new string[所有武器列表.Count + 1];
+        武器名称列表[0] = "无";
+        for (int i = 0; i < 所有武器列表.Count; i++)
+        {
+            var 武器 = 所有武器列表[i];
+            武器名称列表[i + 1] = $"[{武器.id}] {武器.名称} ({武器.小类})";
         }
     }
 
@@ -138,6 +174,13 @@ public class 角色编辑器 : EditorWindow
                 
                 GUILayout.Space(10);
                 
+                // 装备选择
+                GUILayout.Label("装备", EditorStyles.boldLabel);
+                绘制武器选择("主手武器", ref 当前选中角色.主手武器);
+                绘制武器选择("副手武器", ref 当前选中角色.副手武器);
+                
+                GUILayout.Space(10);
+                
                 // 战斗属性
                 GUILayout.Label("战斗属性", EditorStyles.boldLabel);
                 当前选中角色.暴击概率 = EditorGUILayout.FloatField("暴击概率", 当前选中角色.暴击概率);
@@ -186,6 +229,42 @@ public class 角色编辑器 : EditorWindow
         EditorGUILayout.EndVertical();
     }
     
+    private void 绘制武器选择(string 标签, ref 武器 当前武器)
+    {
+        if (所有武器列表 == null || 武器名称列表 == null)
+        {
+            刷新武器列表();
+        }
+        
+        int 当前索引 = 0;
+        if (当前武器 != null)
+        {
+            for (int i = 0; i < 所有武器列表.Count; i++)
+            {
+                if (所有武器列表[i].id == 当前武器.id)
+                {
+                    当前索引 = i + 1;
+                    break;
+                }
+            }
+        }
+        
+        int 新索引 = EditorGUILayout.Popup(标签, 当前索引, 武器名称列表);
+        
+        if (新索引 != 当前索引)
+        {
+            if (新索引 == 0)
+            {
+                当前武器 = null;
+            }
+            else
+            {
+                当前武器 = 所有武器列表[新索引 - 1];
+            }
+            EditorUtility.SetDirty(角色数据);
+        }
+    }
+    
     private void 选择角色(int 索引)
     {
         if (角色数据 != null && 索引 >= 0 && 索引 < 角色数据.角色列表.Count)
@@ -201,11 +280,6 @@ public class 角色编辑器 : EditorWindow
             var 新角色 = new 角色类()
             {
                 名称 = $"新角色_{角色数据.角色列表.Count + 1}",
-                // 力量 = 10,
-                // 智力 = 10,
-                // 敏捷 = 10,
-                // 耐力 = 10,
-                // 行动力 = 3
             };
             
             角色数据.角色列表.Add(新角色);

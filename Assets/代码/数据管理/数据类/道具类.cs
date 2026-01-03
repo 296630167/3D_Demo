@@ -84,7 +84,7 @@ public class 武器 : 装备
     public int 耐久;
     public List<技能类> 装备附带技能列表 = new List<技能类>();
     public Dictionary<材料, int> 打造所需材料字典 = new Dictionary<材料, int>();
-    public List<(属性伤害类型, int)> 固定伤害列表 = new List<(属性伤害类型, int)>();
+    public float 固定伤害;
     public List<(属性伤害类型, float)> 比例伤害列表 = new List<(属性伤害类型, float)>();
     public float 穿甲;
     public float 魔法加成;

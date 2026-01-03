@@ -870,16 +870,12 @@ public class 道具编辑器 : EditorWindow
         武器.耐久 = EditorGUILayout.IntField("耐久", 武器.耐久);
         武器.穿甲 = EditorGUILayout.FloatField("穿甲", 武器.穿甲);
         武器.魔法加成 = EditorGUILayout.FloatField("魔法加成", 武器.魔法加成);
+        武器.固定伤害 = EditorGUILayout.FloatField("固定伤害", 武器.固定伤害);
         
         GUILayout.Space(10);
         
         // 属性倍率编辑
         绘制属性倍率编辑(武器.属性倍率);
-        
-        GUILayout.Space(10);
-        
-        // 固定伤害编辑
-        绘制固定伤害编辑(武器.固定伤害列表);
         
         GUILayout.Space(10);
         
@@ -961,40 +957,6 @@ public class 道具编辑器 : EditorWindow
     }
     
     /// <summary>
-    /// 绘制固定伤害编辑（武器专用）
-    /// </summary>
-    private void 绘制固定伤害编辑(List<(属性伤害类型, int)> 固定伤害列表)
-    {
-        GUILayout.Label("固定伤害", EditorStyles.boldLabel);
-        
-        if (固定伤害列表 == null) return;
-        
-        // 显示现有固定伤害
-        for (int i = 固定伤害列表.Count - 1; i >= 0; i--)
-        {
-            EditorGUILayout.BeginHorizontal();
-            {
-                var 当前项 = 固定伤害列表[i];
-                var 新伤害类型 = (属性伤害类型)EditorGUILayout.EnumPopup(当前项.Item1, GUILayout.Width(120));
-                var 新伤害值 = EditorGUILayout.IntField(当前项.Item2, GUILayout.Width(80));
-                固定伤害列表[i] = (新伤害类型, 新伤害值);
-                
-                if (GUILayout.Button("删除", GUILayout.Width(50)))
-                {
-                    固定伤害列表.RemoveAt(i);
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-        
-        // 添加新固定伤害
-        if (GUILayout.Button("添加固定伤害", GUILayout.Height(25)))
-        {
-            固定伤害列表.Add((属性伤害类型.物理伤害, 1));
-        }
-    }
-    
-    /// <summary>
     /// 绘制比例伤害编辑（武器专用）
     /// </summary>
     private void 绘制比例伤害编辑(List<(属性伤害类型, float)> 比例伤害列表)
@@ -1010,8 +972,8 @@ public class 道具编辑器 : EditorWindow
             {
                 var 当前项 = 比例伤害列表[i];
                 var 新伤害类型 = (属性伤害类型)EditorGUILayout.EnumPopup(当前项.Item1, GUILayout.Width(120));
-                var 新比例值 = EditorGUILayout.FloatField(当前项.Item2, GUILayout.Width(80));
-                比例伤害列表[i] = (新伤害类型, 新比例值);
+                var 新比例값 = EditorGUILayout.FloatField(当前项.Item2, GUILayout.Width(80));
+                比例伤害列表[i] = (新伤害类型, 新比例값);
                 
                 if (GUILayout.Button("删除", GUILayout.Width(50)))
                 {
