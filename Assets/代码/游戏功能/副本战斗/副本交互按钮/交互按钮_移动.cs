@@ -56,17 +56,20 @@ public class 交互按钮_移动 : 交互按钮_基类
             管理器.取消锁定(true);
             return;
         }
+        辅助线.设置网格可见(true);
         辅助线.绘制移动范围区域(单位);
     }
 
     protected override void 离开交互按钮()
     {
         辅助线.绘制移动范围区域(null);
+        辅助线.设置网格可见(false);
         sj.新副本UI.隐藏消耗行动力提示文本();
     }
 
     protected override void 进入交互按钮()
     {
+        辅助线.设置网格可见(true);
         辅助线.绘制移动范围区域(单位);
     }
 
@@ -76,6 +79,7 @@ public class 交互按钮_移动 : 交互按钮_基类
         辅助线.绘制移动目标区域(Vector3.zero, false);
         辅助线.绘制移动路径(null);
         上一次目标格子 = null;
+        辅助线.设置网格可见(false);
         sj.新副本UI.隐藏消耗行动力提示文本();
     }
 }

@@ -109,6 +109,7 @@ public class 新副本UI : 面板基类
         yield return 启动携程(地图管理.初始化新房间数据(房间, 上一个房间, cd.副本上阵单位数组));
         yield return 启动携程(辅助线.设置菱形格尺寸(1f, 0.75f));
         yield return 启动携程(辅助线.初始化辅助线网格_菱形(Vector3.zero, 30, 30));
+        辅助线.设置网格可见(false);
         yield return 启动携程(副本场景.进入房间(房间));
     }
     #endregion

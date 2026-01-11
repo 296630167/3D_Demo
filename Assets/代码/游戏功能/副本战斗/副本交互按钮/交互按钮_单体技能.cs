@@ -29,6 +29,12 @@ public class 交互按钮_单体技能 : 交互按钮_基类
         }
 
         var 目标单位 = 当前格子.单位;
+        if (目标单位 == null)
+        {
+            当前目标单位 = null;
+            辅助线.取消绘制技能选择单位区域();
+            return;
+        }
         if (!目标合法(目标单位))
         {
             当前目标单位 = null;
@@ -129,6 +135,8 @@ public class 交互按钮_单体技能 : 交互按钮_基类
 
     private bool 目标合法(副本单位 目标)
     {
+        if (目标 == null || 单位 == null || 单位.单位 == null || 技能 == null) return false;
+
         switch (技能.施法对象)
         {
             case 技能施法对象.自己:

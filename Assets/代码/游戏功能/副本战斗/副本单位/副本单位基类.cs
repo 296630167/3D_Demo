@@ -17,6 +17,7 @@ public class 副本单位脚本 : 基
     public Dictionary<副本_房间_地图_格子, List<副本_房间_地图_格子>> 可移动范围字典 = new Dictionary<副本_房间_地图_格子, List<副本_房间_地图_格子>>();
     // 这个格子 需要自动去重
     public HashSet<副本_房间_地图_格子> 可移动范围格子哈希集 = new HashSet<副本_房间_地图_格子>();
+    public HashSet<副本_房间_地图_格子> 技能攻击范围格子哈希集 = new HashSet<副本_房间_地图_格子>();
     public List<副本_房间_地图_格子> 移动路径列表 = new List<副本_房间_地图_格子>();
     public 副本单位脚本 锁定敌人单位;
     public 血条组件 血条;

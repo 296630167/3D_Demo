@@ -1,19 +1,9 @@
 fileFormatVersion: 2
-guid: ba5f0b555c7064e4b80babf71d633fce
+guid: 46e52487c4c22a049a3da4a228b436fb
 ModelImporter:
   serializedVersion: 20300
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: aozhake_muscle_mat
-    second: {fileID: 2100000, guid: efd4aa107882a8a40aa872d581c20ae5, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: lambert5
-    second: {fileID: 2100000, guid: c7399e3f25a703040a3297e4d2afe8a1, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
